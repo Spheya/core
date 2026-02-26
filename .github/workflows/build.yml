@@ -20,5 +20,10 @@ jobs:
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
+    - name: Install LLVM
+      run: |
+        choco install llvm -y
+        refreshenv
+
     - name: Build Project
       run: msbuild core.slnx /m /t:Clean,Build /p:Configuration=${{ matrix.config }} /p:Platform=x64 /p:RunCodeAnalysis=true /v:m
