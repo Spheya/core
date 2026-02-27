@@ -2,9 +2,9 @@
 
 #include <memory>
 
+#include "camera.hpp"
 #include "mesh.hpp"
 #include "surface.hpp"
-#include "camera.hpp"
 
 class GraphicsContext {
 	friend BOOL CALLBACK createScreenSurface(HMONITOR, HDC, LPRECT, LPARAM);

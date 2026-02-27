@@ -65,7 +65,9 @@ static BOOL CALLBACK createScreenSurface(HMONITOR hMonitor, HDC /* hdcMonitor */
 	    "Could not create swapchain"
 	);
 
-	GraphicsContext::getInstance().m_screenSurfaces.emplace_back(std::make_unique<ScreenSurface>(hWnd, std::move(swapchain), glm::uvec2(w, h), glm::ivec2(x, y)));
+	GraphicsContext::getInstance().m_screenSurfaces.emplace_back(
+	    std::make_unique<ScreenSurface>(hWnd, std::move(swapchain), glm::uvec2(w, h), glm::ivec2(x, y))
+	);
 	ShowWindow(hWnd, SW_SHOW);
 
 	return TRUE;
@@ -180,14 +182,15 @@ GraphicsContext::GraphicsContext() {
 
 void GraphicsContext::prepareCameraMatrices(const Camera& camera) {
 	D3D11_MAPPED_SUBRESOURCE cameraBufferResource;
-	handleFatalError(m_context->Map(m_cameraBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &cameraBufferResource), "Could not map camera buffer to CPU memory");
+	handleFatalError(
+	    m_context->Map(m_cameraBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &cameraBufferResource), "Could not map camera buffer to CPU memory"
+	);
 	memcpy(cameraBufferResource.pData, &camera, sizeof(glm::mat4) * 2);
 	m_context->Unmap(m_cameraBuffer.Get(), 0);
 }
 
 void GraphicsContext::draw(const Camera& camera) {
 	assert(camera.target);
-
 
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;

@@ -20,7 +20,11 @@ Surface::Surface(HWND window, ComPtr<IDXGISwapChain> swapchain, glm::uvec2 initi
 }
 
 Surface::Surface(Surface&& other) noexcept :
-    m_window(other.m_window), m_swapchain(std::move(other.m_swapchain)), m_rtv(std::move(other.m_rtv)), m_dimensions(other.m_dimensions), m_position(other.m_position) {
+    m_window(other.m_window),
+    m_swapchain(std::move(other.m_swapchain)),
+    m_rtv(std::move(other.m_rtv)),
+    m_dimensions(other.m_dimensions),
+    m_position(other.m_position) {
 	s_surfaces.at(other.m_window) = this;
 	other.m_window = nullptr;
 	other.m_swapchain = nullptr;
@@ -71,8 +75,7 @@ void Surface::loadRtv() {
 }
 
 ScreenSurface::ScreenSurface(HWND window, ComPtr<IDXGISwapChain> swapchain, glm::uvec2 initialDimensions, glm::ivec2 position) :
-    Surface(window, std::move(swapchain), initialDimensions, position)
- {
+    Surface(window, std::move(swapchain), initialDimensions, position) {
 	auto* compDevice = GraphicsContext::getInstance().getCompositionDevice();
 	handleFatalError(compDevice->CreateTargetForHwnd(window, true, m_target.GetAddressOf()), "Could not create a DirectComposition target");
 	handleFatalError(compDevice->CreateVisual(m_visual.GetAddressOf()), "Could not create a DirectComposition visual");
