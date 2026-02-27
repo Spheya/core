@@ -6,8 +6,8 @@
 
 static std::unordered_map<HWND, Surface*> s_surfaces; // NOLINT
 
-Surface::Surface(HWND window, ComPtr<IDXGISwapChain> swapchain, glm::ivec2 initialiDimensions) :
-    m_window(window), m_swapchain(std::move(swapchain)), m_dimensions(initialiDimensions) {
+Surface::Surface(HWND window, ComPtr<IDXGISwapChain> swapchain, glm::ivec2 initialDimensions) :
+    m_window(window), m_swapchain(std::move(swapchain)), m_dimensions(initialDimensions) {
 	loadRtv();
 	s_surfaces.emplace(window, this);
 }
@@ -75,7 +75,7 @@ void Surface::loadRtv() {
 }
 
 ScreenSurface::ScreenSurface(HWND window, ComPtr<IDXGISwapChain> swapchain, glm::ivec2 initialDimensions) :
-    Surface(window, std::move(swapchain), std::move(initialDimensions)) {
+    Surface(window, std::move(swapchain), initialDimensions) {
 	auto* compDevice = GraphicsContext::getInstance().getCompositionDevice();
 	handleFatalError(compDevice->CreateTargetForHwnd(window, true, m_target.GetAddressOf()), "Could not create a DirectComposition target");
 	handleFatalError(compDevice->CreateVisual(m_visual.GetAddressOf()), "Could not create a DirectComposition visual");
