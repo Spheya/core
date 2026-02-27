@@ -8,6 +8,7 @@
 #include "platform.hpp"
 #include "sprite.hpp"
 
+// Todo: constexpr this, somehow
 class SpriteAtlas {
 public:
 	static void load();

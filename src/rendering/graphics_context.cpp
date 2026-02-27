@@ -6,7 +6,16 @@
 
 #include "sprite_atlas.hpp"
 
+static constexpr unsigned MaxInstances = 256;
+
 GraphicsContext* GraphicsContext::s_instance = nullptr;
+
+namespace {
+	struct InstanceData {
+		glm::mat4 matrix;
+		glm::vec4 texCoordSt;
+	};
+} // namespace
 
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch(msg) {
@@ -53,7 +62,6 @@ static BOOL CALLBACK createScreenSurface(HMONITOR hMonitor, HDC /* hdcMonitor */
 	swapchainDesc.SampleDesc.Count = 1;
 	swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapchainDesc.BufferCount = 2;
-	// swapchainDesc.Scaling = DXGI_SCALING_NONE;
 	swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swapchainDesc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
 
@@ -137,9 +145,14 @@ GraphicsContext::GraphicsContext() {
 	cameraBufferDesc.ByteWidth = sizeof(glm::mat4) * 2;
 	cameraBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cameraBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	cameraBufferDesc.MiscFlags = 0;
-	cameraBufferDesc.StructureByteStride = 0;
 	handleFatalError(m_device->CreateBuffer(&cameraBufferDesc, nullptr, m_cameraBuffer.GetAddressOf()), "Could not create camera buffer");
+
+	D3D11_BUFFER_DESC instanceBufferDesc = {};
+	instanceBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	instanceBufferDesc.ByteWidth = sizeof(InstanceData) * MaxInstances;
+	instanceBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	instanceBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	handleFatalError(m_device->CreateBuffer(&instanceBufferDesc, nullptr, m_instanceBuffer.GetAddressOf()), "Could not create instancing buffer");
 
 	// Print Device Info
 #ifndef SHIPPING
@@ -189,14 +202,10 @@ void GraphicsContext::prepareCameraMatrices(const Camera& camera) {
 	m_context->Unmap(m_cameraBuffer.Get(), 0);
 }
 
-void GraphicsContext::draw(const Camera& camera) {
+void GraphicsContext::draw(const Camera& camera, std::span<const Drawable> drawables) {
 	assert(camera.target);
 
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-
-	auto* rtv = camera.target->getRenderTargetView();
-
+	// Prepare render target
 	D3D11_VIEWPORT viewport = {};
 	viewport.Width = float(camera.target->getWidth());
 	viewport.Height = float(camera.target->getHeight());
@@ -205,12 +214,18 @@ void GraphicsContext::draw(const Camera& camera) {
 
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
+	auto* rtv = camera.target->getRenderTargetView();
 	auto* srv = SpriteAtlas::getInstance().getShaderResourceView();
-	prepareCameraMatrices(camera);
 
 	m_context->OMSetRenderTargets(1, &rtv, nullptr);
 	m_context->RSSetViewports(1, &viewport);
 	m_context->ClearRenderTargetView(rtv, clearColor);
+	prepareCameraMatrices(camera);
+
+	// Prepare rendering state
+	UINT strides[] = { sizeof(Vertex), sizeof(InstanceData) };
+	UINT offsets[] = { 0, 0 };
+	ID3D11Buffer* vertexBuffers[] = { m_quadMesh->m_vertexBuffer.Get(), m_instanceBuffer.Get() };
 
 	m_context->VSSetShader(m_defaultVertexShader.Get(), nullptr, 0);
 	m_context->PSSetShader(m_defaultPixelShader.Get(), nullptr, 0);
@@ -218,11 +233,24 @@ void GraphicsContext::draw(const Camera& camera) {
 	m_context->VSSetConstantBuffers(0, 1, m_cameraBuffer.GetAddressOf());
 
 	m_context->IASetInputLayout(m_defaultInputLayout.Get());
-	m_context->IASetVertexBuffers(0, 1, m_quadMesh->m_vertexBuffer.GetAddressOf(), &stride, &offset);
+	m_context->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
 	m_context->IASetIndexBuffer(m_quadMesh->m_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 	m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	m_context->DrawIndexed(m_quadMesh->getIndexCount(), 0, 0);
+	// Draw everything
+	for(unsigned i = 0; i < unsigned(drawables.size()); i += MaxInstances) {
+		unsigned batchSize = std::min(MaxInstances, unsigned(drawables.size()) - i);
+		D3D11_MAPPED_SUBRESOURCE instanceBufferResource;
+		handleFatalError(
+		    m_context->Map(m_instanceBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &instanceBufferResource),
+		    "Could not map instance buffer to CPU memory"
+		);
+		auto* instanceData = static_cast<InstanceData*>(instanceBufferResource.pData);
+		for(unsigned j = 0; j < batchSize; ++j)
+			instanceData[j] = InstanceData{ .matrix = drawables[i + j].matrix, .texCoordSt = drawables[i + j].sprite.getScaleOffset() };
+		m_context->Unmap(m_instanceBuffer.Get(), 0);
+		m_context->DrawIndexedInstanced(m_quadMesh->getIndexCount(), batchSize, 0, 0, 0);
+	}
 }
 
 void GraphicsContext::loadResources() {
@@ -234,17 +262,17 @@ void GraphicsContext::loadResources() {
 	};
 
 	constexpr D3D11_INPUT_ELEMENT_DESC layout[] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 0,  D3D11_INPUT_PER_VERTEX_DATA,   0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, 12, D3D11_INPUT_PER_VERTEX_DATA,   0 },
 
-		//{ "WORLD",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0,  D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-		//{ "WORLD",    1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-		//{ "WORLD",    2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-		//{ "WORLD",    3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-		//{ "ST",       0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 64, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+		{ "MODEL",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0,  D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "MODEL",    1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "MODEL",    2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "MODEL",    3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "ST",       0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 64, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
 	};
 
-	m_device->CreateInputLayout(layout, 2, defaultVertexSource, sizeof(defaultVertexSource), &m_defaultInputLayout);
+	m_device->CreateInputLayout(layout, sizeof(layout) / sizeof(*layout), defaultVertexSource, sizeof(defaultVertexSource), &m_defaultInputLayout);
 	m_device->CreateVertexShader(defaultVertexSource, sizeof(defaultVertexSource), nullptr, &m_defaultVertexShader);
 	m_device->CreatePixelShader(defaultPixelSource, sizeof(defaultPixelSource), nullptr, &m_defaultPixelShader);
 

@@ -1,8 +1,10 @@
 #pragma once
 
 #include <memory>
+#include <span>
 
 #include "camera.hpp"
+#include "drawable.hpp"
 #include "mesh.hpp"
 #include "surface.hpp"
 
@@ -26,7 +28,7 @@ public:
 	[[nodiscard]] std::span<const std::unique_ptr<ScreenSurface>> getScreenSurfaces() const { return m_screenSurfaces; }
 
 	void prepareCameraMatrices(const Camera& camera);
-	void draw(const Camera& camera);
+	void draw(const Camera& camera, std::span<const Drawable> drawables);
 
 private:
 	void loadResources();
@@ -41,6 +43,7 @@ private:
 	ComPtr<IDXGIFactory4> m_factory;
 
 	ComPtr<ID3D11Buffer> m_cameraBuffer;
+	ComPtr<ID3D11Buffer> m_instanceBuffer;
 
 	ComPtr<ID3D11InputLayout> m_defaultInputLayout;
 	ComPtr<ID3D11VertexShader> m_defaultVertexShader;
