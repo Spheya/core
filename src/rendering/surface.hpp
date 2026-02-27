@@ -11,7 +11,7 @@ public:
 	[[nodiscard]] static size_t count();
 
 public:
-	Surface(HWND window, ComPtr<IDXGISwapChain> swapchain, glm::ivec2 initialDimensions);
+	Surface(HWND window, ComPtr<IDXGISwapChain> swapchain, glm::uvec2 initialDimensions);
 	Surface(const Surface&) = delete;
 	Surface& operator=(const Surface&) = delete;
 	Surface(Surface&& other) noexcept;
@@ -44,7 +44,7 @@ private:
 
 class ScreenSurface : public Surface {
 public:
-	ScreenSurface(HWND window, ComPtr<IDXGISwapChain> swapchain, glm::ivec2 initialDimensions);
+	ScreenSurface(HWND window, ComPtr<IDXGISwapChain> swapchain, glm::uvec2 initialDimensions);
 
 	[[nodiscard]] IDCompositionTarget* getTarget() const { return m_target.Get(); }
 	[[nodiscard]] IDCompositionVisual* getVisual() const { return m_visual.Get(); }

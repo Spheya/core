@@ -15,6 +15,58 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 	return 0;
 }
 
+static BOOL CALLBACK createScreenSurface(HMONITOR hMonitor, HDC /* hdcMonitor */, LPRECT /* lprcMonitor */, LPARAM lParam) {
+	MONITORINFOEX mi = {};
+	mi.cbSize = sizeof(MONITORINFOEX);
+
+	if(!GetMonitorInfo(hMonitor, &mi)) fatalError("Could not obtain monitor info");
+
+	unsigned x = mi.rcMonitor.left;
+	unsigned y = mi.rcMonitor.top;
+	unsigned w = mi.rcMonitor.right - mi.rcMonitor.left;
+	unsigned h = mi.rcMonitor.bottom - mi.rcMonitor.top;
+
+	HWND hWnd = CreateWindowEx(
+	    WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_NOREDIRECTIONBITMAP | WS_EX_TOPMOST | WS_EX_TOOLWINDOW,
+	    L"Window",
+	    L"",
+	    WS_POPUP,
+	    x,
+	    y,
+	    w,
+	    h,
+	    nullptr,
+	    nullptr,
+	    reinterpret_cast<HINSTANCE>(lParam),
+	    nullptr
+	);
+
+	DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
+	swapchainDesc.Width = w;
+	swapchainDesc.Height = h;
+	swapchainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapchainDesc.Stereo = FALSE;
+	swapchainDesc.SampleDesc.Count = 1;
+	swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapchainDesc.BufferCount = 2;
+	// swapchainDesc.Scaling = DXGI_SCALING_NONE;
+	swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+	swapchainDesc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
+
+	ComPtr<IDXGISwapChain1> swapchain;
+	handleFatalError(
+	    GraphicsContext::getInstance().getFactory()->CreateSwapChainForComposition(
+	        GraphicsContext::getInstance().getDevice(), &swapchainDesc, nullptr, swapchain.GetAddressOf()
+	    ),
+	    "Could not create swapchain"
+	);
+
+	GraphicsContext::getInstance().m_screenSurfaces.emplace_back(std::make_unique<ScreenSurface>(hWnd, std::move(swapchain), glm::ivec2(w, h)));
+	ShowWindow(hWnd, SW_SHOW);
+
+	return TRUE;
+}
+
 static void initializeWindowClasses(HINSTANCE hInstance) {
 	WNDCLASS windowClass = {};
 	windowClass.style = CS_HREDRAW | CS_VREDRAW;
@@ -25,52 +77,15 @@ static void initializeWindowClasses(HINSTANCE hInstance) {
 	RegisterClass(&windowClass);
 }
 
-void GraphicsContext::initialize(HINSTANCE hInstance, const wchar_t* applicationName) {
+void GraphicsContext::initialize(HINSTANCE hInstance) {
 	assert(!s_instance);
 	s_instance = new GraphicsContext();
 
 	initializeWindowClasses(hInstance);
+	EnumDisplayMonitors(nullptr, nullptr, createScreenSurface, reinterpret_cast<LPARAM>(hInstance));
 
-	HWND mainWindow = CreateWindowEx(
-	    WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_NOREDIRECTIONBITMAP | WS_EX_TOPMOST,
-	    L"Window",
-	    applicationName,
-	    WS_POPUP,
-	    CW_USEDEFAULT,
-	    CW_USEDEFAULT,
-	    960,
-	    640,
-	    nullptr,
-	    nullptr,
-	    hInstance,
-	    nullptr
-	);
-
-	DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
-	swapchainDesc.BufferCount = 2;
-	swapchainDesc.Width = 960;
-	swapchainDesc.Height = 640;
-	swapchainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapchainDesc.SampleDesc.Count = 1;
-	swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-	swapchainDesc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
-
-	ComPtr<IDXGIFactory4> factory;
-	handleFatalError(CreateDXGIFactory(IID_PPV_ARGS(&factory)), "Could not create IDXGIFactory1");
-
-	ComPtr<IDXGISwapChain1> swapchain;
-	handleFatalError(
-	    factory->CreateSwapChainForComposition(s_instance->m_device.Get(), &swapchainDesc, nullptr, swapchain.GetAddressOf()),
-	    "Could not create swapchain"
-	);
-
-	s_instance->m_mainSurface = std::make_unique<ScreenSurface>(mainWindow, std::move(swapchain), glm::ivec2(960, 640));
 	s_instance->loadResources();
-
 	s_instance->getCompositionDevice()->Commit();
-
-	ShowWindow(mainWindow, SW_SHOW);
 }
 
 void GraphicsContext::close() {
@@ -107,6 +122,9 @@ GraphicsContext::GraphicsContext() {
 	// Setup DirectComposition
 	handleFatalError(DCompositionCreateDevice(nullptr, IID_PPV_ARGS(m_compDevice.GetAddressOf())), "Could not create a DirectComposition context");
 
+	// Setup factory
+	handleFatalError(CreateDXGIFactory(IID_PPV_ARGS(&m_factory)), "Could not create IDXGIFactory");
+
 	// Print Device Info
 #ifndef SHIPPING
 	ComPtr<IDXGIDevice> dxgiDevice;
@@ -142,7 +160,7 @@ GraphicsContext::GraphicsContext() {
 	logger::log("DirectX Device: {}", str);
 	logger::log("Device Id: {:#x}", desc.DeviceId);
 	logger::log("Device Vendor Id: {:#x}", desc.VendorId);
-	logger::log("Dedicated Video Memory: {} MB\n", (desc.DedicatedVideoMemory / (1024ull * 1024ull)));
+	logger::log("Video Memory: {} MB\n", (desc.DedicatedVideoMemory / (1024ull * 1024ull)));
 #endif
 }
 

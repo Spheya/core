@@ -8,13 +8,15 @@ static std::atomic_bool s_closeRequested; // NOLINT
 
 static void applicationLoop() {
 	while(!s_closeRequested) {
-		GraphicsContext::getInstance().draw(GraphicsContext::getInstance().getMainSurface());
-		GraphicsContext::getInstance().getMainSurface().getSwapchain()->Present(1, 0);
+		for(auto& surface : GraphicsContext::getInstance().getScreenSurfaces()) {
+			GraphicsContext::getInstance().draw(*surface);
+			surface->getSwapchain()->Present(1, 0);
+		}
 	}
 }
 
 static int runApp(HINSTANCE hInstance) {
-	GraphicsContext::initialize(hInstance, L"core.exe");
+	GraphicsContext::initialize(hInstance);
 	SpriteAtlas::load();
 
 	std::thread app(applicationLoop);
