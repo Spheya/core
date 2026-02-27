@@ -16,6 +16,8 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 }
 
 static BOOL CALLBACK createScreenSurface(HMONITOR hMonitor, HDC /* hdcMonitor */, LPRECT /* lprcMonitor */, LPARAM lParam) {
+	HINSTANCE hInstance = (HINSTANCE)lParam; // NOLINT
+
 	MONITORINFOEX mi = {};
 	mi.cbSize = sizeof(MONITORINFOEX);
 
@@ -31,13 +33,13 @@ static BOOL CALLBACK createScreenSurface(HMONITOR hMonitor, HDC /* hdcMonitor */
 	    L"Window",
 	    L"",
 	    WS_POPUP,
-	    x,
-	    y,
-	    w,
-	    h,
+	    int(x),
+	    int(y),
+	    int(w),
+	    int(h),
 	    nullptr,
 	    nullptr,
-	    reinterpret_cast<HINSTANCE>(lParam),
+	    hInstance,
 	    nullptr
 	);
 
@@ -82,7 +84,7 @@ void GraphicsContext::initialize(HINSTANCE hInstance) {
 	s_instance = new GraphicsContext();
 
 	initializeWindowClasses(hInstance);
-	EnumDisplayMonitors(nullptr, nullptr, createScreenSurface, reinterpret_cast<LPARAM>(hInstance));
+	EnumDisplayMonitors(nullptr, nullptr, createScreenSurface, (LPARAM)hInstance); // NOLINT
 
 	s_instance->loadResources();
 	s_instance->getCompositionDevice()->Commit();
