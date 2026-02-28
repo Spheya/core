@@ -1,3 +1,4 @@
+#include <chrono>
 #include <thread>
 
 #include "platform.hpp"
@@ -12,11 +13,16 @@ static void applicationLoop() {
 		{ .sprite = SpriteAtlas::getInstance().get("player_idle_1.png"), .matrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)) }
 	};
 
-	float t = 0.0f;
+	const auto startTime = std::chrono::high_resolution_clock::now();
+	auto prevTime = startTime;
 
 	while(!s_closeRequested) {
-		t += 1.0f / 60.0f;
-		drawables[1].matrix = glm::translate(glm::rotate(glm::mat4(1.0f), t, glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(1.0f, 0.0f, 0.0f));
+		auto frameTime = std::chrono::high_resolution_clock::now();
+		// float deltatime = std::chrono::duration<float>(frameTime - prevTime).count();
+		float time = std::chrono::duration<float>(frameTime - startTime).count();
+		prevTime = frameTime;
+
+		drawables[1].matrix = glm::translate(glm::rotate(glm::mat4(1.0f), time, glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(1.0f, 0.0f, 0.0f));
 		glm::mat4 viewMat(1.0f);
 
 		for(const auto& surface : GraphicsContext::getInstance().getScreenSurfaces()) {
