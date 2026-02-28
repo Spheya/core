@@ -154,6 +154,19 @@ GraphicsContext::GraphicsContext() {
 	instanceBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	handleFatalError(m_device->CreateBuffer(&instanceBufferDesc, nullptr, m_instanceBuffer.GetAddressOf()), "Could not create instancing buffer");
 
+	// Setup samplers
+	D3D11_SAMPLER_DESC samplerDesc = {};
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.MipLODBias = 0.0f;
+	samplerDesc.MaxAnisotropy = 1;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	samplerDesc.MinLOD = 0;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	handleFatalError(m_device->CreateSamplerState(&samplerDesc, m_pointSampler.GetAddressOf()), "Could not create point sampler state");
+
 	// Print Device Info
 #ifndef SHIPPING
 	ComPtr<IDXGIDevice> dxgiDevice;
@@ -230,6 +243,7 @@ void GraphicsContext::draw(const Camera& camera, std::span<const Drawable> drawa
 	m_context->VSSetShader(m_defaultVertexShader.Get(), nullptr, 0);
 	m_context->PSSetShader(m_defaultPixelShader.Get(), nullptr, 0);
 	m_context->PSSetShaderResources(0, 1, &srv);
+	m_context->PSSetSamplers(0, 1, m_pointSampler.GetAddressOf());
 	m_context->VSSetConstantBuffers(0, 1, m_cameraBuffer.GetAddressOf());
 
 	m_context->IASetInputLayout(m_defaultInputLayout.Get());

@@ -9,7 +9,7 @@ static std::atomic_bool s_closeRequested; // NOLINT
 static void applicationLoop() {
 	Drawable drawables[] = {
 		{ .sprite = SpriteAtlas::getInstance().get("miku.png"), .matrix = glm::mat4(1.0f) },
-		{ .sprite = SpriteAtlas::getInstance().get("jaccocube.png"), .matrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)) }
+		{ .sprite = SpriteAtlas::getInstance().get("player_idle_1.png"), .matrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)) }
 	};
 
 	float t = 0.0f;
@@ -17,10 +17,12 @@ static void applicationLoop() {
 	while(!s_closeRequested) {
 		t += 1.0f / 60.0f;
 		drawables[1].matrix = glm::translate(glm::rotate(glm::mat4(1.0f), t, glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::mat4 viewMat(1.0f);
 
 		for(const auto& surface : GraphicsContext::getInstance().getScreenSurfaces()) {
 			float aspect = float(surface->getWidth()) / float(surface->getHeight());
-			Camera camera = { .view = glm::mat4(1.0f), .proj = glm::ortho(-aspect, aspect, 1.0f, -1.0f), .target = surface.get() };
+			Camera camera = { .view = viewMat, .proj = glm::ortho(-aspect, aspect, 1.0f, -1.0f), .target = surface.get() };
+			viewMat = glm::rotate(viewMat, 1.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 			GraphicsContext::getInstance().draw(camera, drawables);
 		}
 

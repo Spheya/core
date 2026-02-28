@@ -49,6 +49,8 @@ private:
 	ComPtr<ID3D11VertexShader> m_defaultVertexShader;
 	ComPtr<ID3D11PixelShader> m_defaultPixelShader;
 
+	ComPtr<ID3D11SamplerState> m_pointSampler;
+
 	std::unique_ptr<Mesh> m_quadMesh;
 	std::vector<std::unique_ptr<ScreenSurface>> m_screenSurfaces;
 };

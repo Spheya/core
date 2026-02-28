@@ -5,14 +5,13 @@ struct Varyings
 };
 
 Texture2D tex : register(t0);
-SamplerState point_sampler
-{
-    Filter = MIN_LINEAR_MAG_POINT_MIP_LINEAR;
-};
+SamplerState point_sampler : register(s0);
 
 float4 main(Varyings varyings) : SV_TARGET
 {
     float4 col = tex.Sample(point_sampler, varyings.uv);
     col.rgb *= col.a;
+    if (col.a < 0.5)
+        discard;
     return col;
 }
