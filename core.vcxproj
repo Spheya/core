@@ -124,14 +124,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\rendering\debug_renderer.cpp" />
     <ClCompile Include="src\rendering\mesh.cpp" />
     <ClCompile Include="src\rendering\graphics_context.cpp" />
     <ClCompile Include="src\rendering\sprite_atlas.cpp" />
     <ClCompile Include="src\rendering\surface.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\physics\bounding_box.hpp" />
     <ClInclude Include="src\rendering\animation.hpp" />
     <ClInclude Include="src\rendering\camera.hpp" />
+    <ClInclude Include="src\rendering\debug_renderer.hpp" />
     <ClInclude Include="src\rendering\sprite_drawable.hpp" />
     <ClInclude Include="src\rendering\mesh.hpp" />
     <ClInclude Include="src\rendering\sprite_atlas.hpp" />
@@ -151,6 +154,16 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="assets\shaders\default_vs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="assets\shaders\line_ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="assets\shaders\line_vs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>

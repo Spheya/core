@@ -26,5 +26,5 @@ inline void fatalError(const char* message) {
 }
 
 inline void handleFatalError(HRESULT result, const char* message) {
-	if(FAILED(result)) fatalError(std::format("DX11 Error: {:#08x}. \"{}\"", result, message).c_str());
+	if(FAILED(result)) fatalError(std::format("DX11 Error: {:#08x}. \"{}\"", (unsigned long)result, message).c_str());
 }

@@ -40,6 +40,13 @@ static void applicationLoop() {
 			Camera camera = { .view = viewMat, .proj = glm::ortho(-aspect, aspect, 1.0f, -1.0f), .target = surface.get() };
 			viewMat = glm::rotate(viewMat, 1.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 			GraphicsContext::getInstance().drawSprites(camera, drawables);
+
+#ifdef _DEBUG
+			GraphicsContext::getInstance().getDebugRenderer().line(glm::vec2(0.0f), glm::vec2(1.0f));
+			GraphicsContext::getInstance().getDebugRenderer().box(BoundingBox(glm::vec2(-0.5f), glm::vec2(0.5f)), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+			GraphicsContext::getInstance().getDebugRenderer().circle(glm::vec2(-1.2f, 0.0f), 0.1f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+			GraphicsContext::getInstance().getDebugRenderer().draw();
+#endif
 		}
 
 		bool first = true;

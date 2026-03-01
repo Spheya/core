@@ -4,6 +4,7 @@
 #include <span>
 
 #include "camera.hpp"
+#include "debug_renderer.hpp"
 #include "mesh.hpp"
 #include "sprite_drawable.hpp"
 #include "surface.hpp"
@@ -30,6 +31,10 @@ public:
 	void prepareCameraMatrices(const Camera& camera);
 	void drawSprites(const Camera& camera, std::span<const SpriteDrawable> drawables);
 
+#ifdef _DEBUG
+	[[nodiscard]] DebugRenderer& getDebugRenderer() const { return *m_debugRenderer; }
+#endif
+
 private:
 	void loadResources();
 
@@ -53,4 +58,8 @@ private:
 
 	std::unique_ptr<Mesh> m_quadMesh;
 	std::vector<std::unique_ptr<ScreenSurface>> m_screenSurfaces;
+
+#ifdef _DEBUG
+	std::unique_ptr<DebugRenderer> m_debugRenderer;
+#endif
 };

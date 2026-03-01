@@ -95,6 +95,10 @@ void GraphicsContext::initialize(HINSTANCE hInstance) {
 	assert(!s_instance);
 	s_instance = new GraphicsContext();
 
+#ifdef _DEBUG
+	s_instance->m_debugRenderer = std::make_unique<DebugRenderer>();
+#endif
+
 	initializeWindowClasses(hInstance);
 	EnumDisplayMonitors(nullptr, nullptr, createScreenSurface, (LPARAM)hInstance); // NOLINT
 
@@ -167,7 +171,7 @@ GraphicsContext::GraphicsContext() {
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	handleFatalError(m_device->CreateSamplerState(&samplerDesc, m_pointSampler.GetAddressOf()), "Could not create point sampler state");
 
-	// Print Device Info
+	// Print device info
 #ifndef SHIPPING
 	ComPtr<IDXGIDevice> dxgiDevice;
 	m_device.As(&dxgiDevice);
@@ -286,9 +290,19 @@ void GraphicsContext::loadResources() {
 		{ "ST",       0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 64, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
 	};
 
-	m_device->CreateInputLayout(layout, sizeof(layout) / sizeof(*layout), defaultVertexSource, sizeof(defaultVertexSource), &m_defaultInputLayout);
-	m_device->CreateVertexShader(defaultVertexSource, sizeof(defaultVertexSource), nullptr, &m_defaultVertexShader);
-	m_device->CreatePixelShader(defaultPixelSource, sizeof(defaultPixelSource), nullptr, &m_defaultPixelShader);
+	handleFatalError(
+	    m_device->CreateInputLayout(
+	        layout, sizeof(layout) / sizeof(*layout), defaultVertexSource, sizeof(defaultVertexSource), &m_defaultInputLayout
+	    ),
+	    "Could not load vertex layout"
+	);
+	handleFatalError(
+	    m_device->CreateVertexShader(defaultVertexSource, sizeof(defaultVertexSource), nullptr, &m_defaultVertexShader),
+	    "Could not load vertex shader"
+	);
+	handleFatalError(
+	    m_device->CreatePixelShader(defaultPixelSource, sizeof(defaultPixelSource), nullptr, &m_defaultPixelShader), "Could not load pixel shader"
+	);
 
 	constexpr Vertex quadVertices[] = {
 		{ .position = glm::vec3(-0.5f, +0.5f, 0.0f), .uv = glm::vec2(0.0f, 1.0f) },
