@@ -44,6 +44,7 @@ static void applicationLoop() {
 #ifdef _DEBUG
 			GraphicsContext::getInstance().getDebugRenderer().line(glm::vec2(0.0f), glm::vec2(1.0f));
 			GraphicsContext::getInstance().getDebugRenderer().box(BoundingBox(glm::vec2(-0.5f), glm::vec2(0.5f)), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+			GraphicsContext::getInstance().getDebugRenderer().circle(glm::vec2(-1.2f, 0.0f), 0.1f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 			GraphicsContext::getInstance().getDebugRenderer().draw();
 #endif
 		}

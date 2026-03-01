@@ -50,6 +50,14 @@ void DebugRenderer::box(const BoundingBox& box, glm::vec4 color) {
 	line(glm::vec2(box.min.x, box.max.y), glm::vec2(box.max.x, box.max.y), color);
 }
 
+void DebugRenderer::circle(glm::vec2 center, float radius, glm::vec4 color) {
+	for(int i = 0; i < 16; ++i) {
+		float alpha = i * glm::two_pi<float>() / 16.0f;
+		float beta = (i + 1) * glm::two_pi<float>() / 16.0f;
+		line(glm::vec2(sin(alpha), cos(alpha)) * radius + center, glm::vec2(sin(beta), cos(beta)) * radius + center, color);
+	}
+}
+
 void DebugRenderer::draw() {
 	if(m_vertices.size() > MaxVertices)
 		logger::warn("Attempting to draw {} vertices, the debug renderer can only handle up to {}", m_vertices.size(), MaxVertices);

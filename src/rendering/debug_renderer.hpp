@@ -18,6 +18,7 @@ public:
 
 	void line(glm::vec2 a, glm::vec2 b, glm::vec4 color = glm::vec4(1.0f));
 	void box(const BoundingBox& box, glm::vec4 color = glm::vec4(1.0f));
+	void circle(glm::vec2 center, float radius, glm::vec4 color = glm::vec4(1.0f));
 
 	void draw();
 
