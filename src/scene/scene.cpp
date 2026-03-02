@@ -38,3 +38,14 @@ std::span<const SpriteDrawable> Scene::buildSprites() {
 
 	return m_sprites;
 }
+
+std::span<const BoundingBox> Scene::buildClickRegions() {
+	m_clickRegions.clear();
+
+	for(auto& e : m_entities) {
+		auto box = e->getClickBounds();
+		if(box.min != box.max) m_clickRegions.push_back(box);
+	}
+
+	return m_clickRegions;
+}
