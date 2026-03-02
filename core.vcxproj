@@ -129,6 +129,8 @@
     <ClCompile Include="src\rendering\graphics_context.cpp" />
     <ClCompile Include="src\rendering\sprite_atlas.cpp" />
     <ClCompile Include="src\rendering\surface.cpp" />
+    <ClCompile Include="src\scene\entities\player.cpp" />
+    <ClCompile Include="src\scene\scene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\physics\bounding_box.hpp" />
@@ -145,6 +147,9 @@
     <ClInclude Include="src\rendering\sprite.hpp" />
     <ClInclude Include="src\rendering\surface.hpp" />
     <ClInclude Include="src\rendering\vertex.hpp" />
+    <ClInclude Include="src\scene\entities\player.hpp" />
+    <ClInclude Include="src\scene\entity.hpp" />
+    <ClInclude Include="src\scene\scene.hpp" />
     <ClInclude Include="src\time.hpp" />
   </ItemGroup>
   <ItemGroup>

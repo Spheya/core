@@ -8,6 +8,8 @@
 
 class Animation {
 public:
+	Animation() = default;
+
 	Animation(std::span<Sprite> sprites, unsigned frameRate, unsigned animateOn, unsigned frameAnimationOffset = 0) :
 	    frameRate(frameRate),
 	    animateOn(animateOn),
@@ -29,9 +31,9 @@ public:
 	const Sprite& getCurrentFrame() { return *m_currentSprite; }
 
 public:
-	unsigned frameRate;
-	unsigned animateOn;
-	unsigned frameAnimationOffset;
+	unsigned frameRate = 0;
+	unsigned animateOn = 0;
+	unsigned frameAnimationOffset = 0;
 
 private:
 	unsigned calcFrame(const Time& time) const { return (unsigned(time.time() * frameRate) + frameAnimationOffset) / animateOn; }
@@ -39,5 +41,5 @@ private:
 private:
 	std::vector<Sprite> m_sprites;
 	std::vector<Sprite>::iterator m_currentSprite;
-	unsigned animationOffset;
+	unsigned animationOffset = 0;
 };

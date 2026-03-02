@@ -4,6 +4,8 @@
 
 class Sprite {
 public:
+	Sprite() = default;
+
 	// clang-format off
 	Sprite(glm::uvec2 position, glm::uvec2 size, glm::uvec2 atlasSize) :
 	    m_dimensions(size),
@@ -21,6 +23,6 @@ public:
 	[[nodiscard]] glm::vec4 getScaleOffset() const { return m_scaleOffset; }
 
 private:
-	glm::uvec2 m_dimensions;
-	glm::vec4 m_scaleOffset;
+	glm::uvec2 m_dimensions = glm::uvec2(0);
+	glm::vec4 m_scaleOffset = glm::vec4(0.0f);
 };
