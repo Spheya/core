@@ -4,6 +4,7 @@
 #include <span>
 #include <vector>
 
+#include "physics/bounding_box.hpp"
 #include "rendering/sprite_drawable.hpp"
 #include "time.hpp"
 
@@ -28,4 +29,5 @@ private:
 	std::vector<std::unique_ptr<Entity>> m_entities;
 
 	std::vector<SpriteDrawable> m_sprites;
+	std::vector<BoundingBox> m_clickRegions;
 };

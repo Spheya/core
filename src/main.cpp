@@ -4,6 +4,7 @@
 #include "rendering/animation.hpp"
 #include "rendering/graphics_context.hpp"
 #include "rendering/sprite_atlas.hpp"
+#include "rendering/surface_manager.hpp"
 #include "scene/entities/player.hpp"
 #include "scene/scene.hpp"
 #include "time.hpp"
@@ -21,7 +22,7 @@ static void applicationLoop() {
 		time.update();
 		scene.update(time);
 
-		for(const auto& surface : GraphicsContext::getInstance().getScreenSurfaces()) {
+		for(const auto& surface : SurfaceManager::getInstance().getScreenSurfaces()) {
 			Camera camera = { .view = glm::mat4(1.0f), .proj = surface->getProjectionMatrix(), .target = surface.get() };
 			GraphicsContext::getInstance().drawSprites(camera, scene.buildSprites());
 
@@ -35,7 +36,7 @@ static void applicationLoop() {
 #endif
 
 		bool first = true;
-		for(const auto& surface : GraphicsContext::getInstance().getScreenSurfaces()) {
+		for(const auto& surface : SurfaceManager::getInstance().getScreenSurfaces()) {
 			surface->getSwapchain()->Present(first ? 1 : 0, 0);
 			first = false;
 		}
@@ -43,7 +44,8 @@ static void applicationLoop() {
 }
 
 static int runApp(HINSTANCE hInstance) {
-	GraphicsContext::initialize(hInstance);
+	GraphicsContext::initialize();
+	SurfaceManager::initialize(hInstance);
 	SpriteAtlas::load();
 
 	std::thread app(applicationLoop);

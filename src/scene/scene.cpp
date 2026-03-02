@@ -22,9 +22,7 @@ void Scene::update(const Time& time) {
 
 #ifdef _DEBUG
 	for(auto& e : m_entities) {
-		BoundingBox clickBounds = e->getClickBounds();
 		BoundingBox physicsBounds = e->getPhysicsBounds();
-		if(clickBounds.min != clickBounds.max) GraphicsContext::getInstance().getDebugRenderer().box(clickBounds, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 		if(physicsBounds.min != physicsBounds.max)
 			GraphicsContext::getInstance().getDebugRenderer().box(physicsBounds, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
 	}

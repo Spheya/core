@@ -1,22 +1,11 @@
 #include "surface.hpp"
 #include "graphics_context.hpp"
-
-std::unordered_map<HWND, Surface*> Surface::s_surfaces;
-
-Surface* Surface::get(HWND window) {
-	auto it = s_surfaces.find(window);
-	if(it == s_surfaces.end()) return nullptr;
-	return it->second;
-}
-
-size_t Surface::count() {
-	return s_surfaces.size();
-}
+#include "surface_manager.hpp"
 
 Surface::Surface(HWND window, ComPtr<IDXGISwapChain> swapchain, glm::uvec2 initialDimensions, glm::ivec2 position) :
     m_window(window), m_swapchain(std::move(swapchain)), m_dimensions(initialDimensions), m_position(position) {
 	loadRtv();
-	s_surfaces.emplace(window, this);
+	SurfaceManager::getInstance().m_surfaces.emplace(window, this);
 }
 
 Surface::Surface(Surface&& other) noexcept :
@@ -25,7 +14,7 @@ Surface::Surface(Surface&& other) noexcept :
     m_rtv(std::move(other.m_rtv)),
     m_dimensions(other.m_dimensions),
     m_position(other.m_position) {
-	s_surfaces.at(other.m_window) = this;
+	SurfaceManager::getInstance().m_surfaces.at(other.m_window) = this;
 	other.m_window = nullptr;
 	other.m_swapchain = nullptr;
 	other.m_rtv = nullptr;
@@ -38,7 +27,7 @@ Surface& Surface::operator=(Surface&& other) noexcept {
 	m_rtv = std::move(other.m_rtv);
 	m_dimensions = other.m_dimensions;
 	m_position = other.m_position;
-	s_surfaces.at(other.m_window) = this;
+	SurfaceManager::getInstance().m_surfaces.at(other.m_window) = this;
 	other.m_window = nullptr;
 	return *this;
 }
@@ -58,7 +47,7 @@ void Surface::resizeSwapchain(glm::uvec2 dimensions) {
 }
 
 void Surface::destroy() {
-	s_surfaces.erase(m_window);
+	SurfaceManager::getInstance().m_surfaces.erase(m_window);
 	m_rtv.Reset();
 	m_swapchain.Reset();
 	if(m_window) DestroyWindow(m_window);

@@ -10,12 +10,10 @@
 #include "surface.hpp"
 
 class GraphicsContext {
-	friend BOOL CALLBACK createScreenSurface(HMONITOR, HDC, LPRECT, LPARAM);
-
 public:
-	static void initialize(HINSTANCE hInstance);
+	static void initialize();
 	static void close();
-	static GraphicsContext& getInstance();
+	[[nodiscard]] static GraphicsContext& getInstance();
 
 private:
 	GraphicsContext();
@@ -25,8 +23,6 @@ public:
 	[[nodiscard]] ID3D11DeviceContext* getDeviceContext() const { return m_context.Get(); }
 	[[nodiscard]] IDCompositionDevice* getCompositionDevice() const { return m_compDevice.Get(); }
 	[[nodiscard]] IDXGIFactory4* getFactory() const { return m_factory.Get(); }
-
-	[[nodiscard]] std::span<const std::unique_ptr<ScreenSurface>> getScreenSurfaces() const { return m_screenSurfaces; }
 
 	void prepareCameraMatrices(const Camera& camera);
 	void drawSprites(const Camera& camera, std::span<const SpriteDrawable> drawables);
@@ -57,7 +53,6 @@ private:
 	ComPtr<ID3D11SamplerState> m_pointSampler;
 
 	std::unique_ptr<Mesh> m_quadMesh;
-	std::vector<std::unique_ptr<ScreenSurface>> m_screenSurfaces;
 
 #ifdef _DEBUG
 	std::unique_ptr<DebugRenderer> m_debugRenderer;

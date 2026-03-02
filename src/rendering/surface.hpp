@@ -7,10 +7,6 @@
 
 class Surface {
 public:
-	[[nodiscard]] static Surface* get(HWND window);
-	[[nodiscard]] static size_t count();
-
-public:
 	Surface(HWND window, ComPtr<IDXGISwapChain> swapchain, glm::uvec2 initialDimensions, glm::ivec2 position);
 	Surface(const Surface&) = delete;
 	Surface& operator=(const Surface&) = delete;
@@ -32,9 +28,6 @@ public:
 private:
 	void destroy();
 	void loadRtv();
-
-private:
-	static std::unordered_map<HWND, Surface*> s_surfaces;
 
 private:
 	HWND m_window;

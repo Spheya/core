@@ -41,7 +41,7 @@ void SpriteAtlas::load() {
 	int w;
 	int h;
 	int components;
-	unsigned char* imageData = stbi_load_from_memory((const unsigned char*)pngFile, sizeof(pngFile), &w, &h, &components, 4); // NOLINT
+	unsigned char* imageData = stbi_load_from_memory(reinterpret_cast<const unsigned char*>(pngFile), sizeof(pngFile), &w, &h, &components, 4);
 	assert(std::cmp_equal(w, atlasSize.x));
 	assert(std::cmp_equal(h, atlasSize.y));
 
