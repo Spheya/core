@@ -8,9 +8,9 @@ constexpr UINT WindowMessageSetRegion = WM_APP + 1;
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch(msg) {
 	case WindowMessageSetRegion:
-		SetWindowRgn(hWnd, (HRGN)wParam, false);
+		SetWindowRgn(hWnd, reinterpret_cast<HRGN>(wParam), false); // NOLINT
 		SurfaceManager::getInstance().consumeClickableRegion();
-		break; // NOLINT
+		break;
 	case WM_CLOSE: DestroyWindow(hWnd); break;
 	case WM_DESTROY: PostQuitMessage(0); break;
 	default: return DefWindowProc(hWnd, msg, wParam, lParam);
@@ -29,7 +29,7 @@ static void initializeWindowClasses(HINSTANCE hInstance) {
 }
 
 static BOOL CALLBACK createScreenSurface(HMONITOR hMonitor, HDC /* hdcMonitor */, LPRECT /* lprcMonitor */, LPARAM lParam) {
-	HINSTANCE hInstance = (HINSTANCE)lParam; // NOLINT
+	auto hInstance = reinterpret_cast<HINSTANCE>(lParam); // NOLINT
 
 	MONITORINFOEX mi = {};
 	mi.cbSize = sizeof(MONITORINFOEX);
@@ -86,7 +86,7 @@ static BOOL CALLBACK createScreenSurface(HMONITOR hMonitor, HDC /* hdcMonitor */
 void SurfaceManager::initialize(HINSTANCE hInstance) {
 	assert(!s_instance);
 	s_instance = new SurfaceManager(hInstance);
-	EnumDisplayMonitors(nullptr, nullptr, createScreenSurface, (LPARAM)hInstance); // NOLINT
+	EnumDisplayMonitors(nullptr, nullptr, createScreenSurface, reinterpret_cast<LPARAM>(hInstance));
 	GraphicsContext::getInstance().getCompositionDevice()->Commit();
 }
 
@@ -96,7 +96,7 @@ void SurfaceManager::close() {
 	s_instance = nullptr;
 }
 
-SurfaceManager::SurfaceManager(HINSTANCE hInstance) {
+SurfaceManager::SurfaceManager(HINSTANCE hInstance) : m_vScreenBounds{}, m_rgn(nullptr) {
 	initializeWindowClasses(hInstance);
 
 	int vScreenX = GetSystemMetrics(SM_XVIRTUALSCREEN);
@@ -126,7 +126,9 @@ SurfaceManager::SurfaceManager(HINSTANCE hInstance) {
 	ShowWindow(m_clickWindow, SW_SHOW);
 }
 
-SurfaceManager::~SurfaceManager() {}
+SurfaceManager::~SurfaceManager() {
+	CloseWindow(m_clickWindow);
+}
 
 SurfaceManager& SurfaceManager::getInstance() {
 	assert(s_instance);

@@ -17,6 +17,7 @@ Checks: >
   -cppcoreguidelines-no-malloc,
   -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-pro-bounds-*,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-pro-type-static-cast-downcast,
   -cppcoreguidelines-pro-type-union-access,
   -cppcoreguidelines-pro-type-vararg,
