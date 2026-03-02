@@ -8,9 +8,9 @@ Player::Player() {
 		SpriteAtlas::getInstance().get("player_run_5.png"), SpriteAtlas::getInstance().get("player_run_6.png"),
 	};
 
-	m_animation = Animation(runAnimSprites, 12, 2, 0);
-	localPhysicsBounds = { glm::vec2(-0.25f, 0.0f), glm::vec2(0.25f, 0.5f) };
-	localClickBounds = { glm::vec2(-0.5f), glm::vec2(0.5f) };
+	m_animation = Animation(runAnimSprites, 24, 2, 0);
+	localPhysicsBounds = { .min = glm::vec2(-0.25f, 0.0f), .max = glm::vec2(0.25f, 0.5f) };
+	localClickBounds = { .min = glm::vec2(-0.5f), .max = glm::vec2(0.5f) };
 }
 
 void Player::onUpdate(const Time& time) {
