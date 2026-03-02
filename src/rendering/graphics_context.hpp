@@ -13,7 +13,7 @@ class GraphicsContext {
 public:
 	static void initialize();
 	static void close();
-	static GraphicsContext& getInstance();
+	[[nodiscard]] static GraphicsContext& getInstance();
 
 private:
 	GraphicsContext();

@@ -13,7 +13,7 @@ class SurfaceManager {
 public:
 	static void initialize(HINSTANCE hInstance);
 	static void close();
-	static SurfaceManager& getInstance();
+	[[nodiscard]] static SurfaceManager& getInstance();
 
 	[[nodiscard]] Surface* getSurface(HWND window);
 	[[nodiscard]] size_t getSurfaceCount() const { return m_surfaces.size(); }
