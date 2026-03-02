@@ -12,8 +12,8 @@ static std::atomic_bool s_closeRequested; // NOLINT
 
 static void applicationLoop() {
 	Scene scene;
-	auto p1 = scene.addEntity(std::make_unique<Player>());
-	p1->position = glm::vec2(48.0f, 48.0f);
+	auto* player = scene.addEntity(std::make_unique<Player>());
+	player->position = glm::vec2(48.0f, 48.0f);
 
 	Time time;
 
