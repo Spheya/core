@@ -22,8 +22,6 @@ static void applicationLoop() {
 		time.update();
 		scene.update(time);
 
-		if(SurfaceManager::getInstance().canPushRegions()) SurfaceManager::getInstance().setClickableRegions(scene.buildClickRegions());
-
 		for(const auto& surface : SurfaceManager::getInstance().getScreenSurfaces()) {
 			Camera camera = { .view = glm::mat4(1.0f), .proj = surface->getProjectionMatrix(), .target = surface.get() };
 			GraphicsContext::getInstance().drawSprites(camera, scene.buildSprites());

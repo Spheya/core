@@ -9,7 +9,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 	switch(msg) {
 	case WindowMessageSetRegion:
 		SetWindowRgn(hWnd, (HRGN)wParam, false);
-		SurfaceManager::getInstance().consumeRegions();
+		SurfaceManager::getInstance().consumeClickableRegion();
 		break; // NOLINT
 	case WM_CLOSE: DestroyWindow(hWnd); break;
 	case WM_DESTROY: PostQuitMessage(0); break;
@@ -139,42 +139,12 @@ Surface* SurfaceManager::getSurface(HWND window) {
 	return it->second;
 }
 
-void SurfaceManager::setClickableRegions(std::span<const BoundingBox> regions) {
-	assert(canPushRegions());
-	m_rgn = createRgn(regions);
+void SurfaceManager::pushClickableRegion(const BoundingBox region) {
+	m_rgn = CreateRectRgn(
+	    int(region.min.x - m_vScreenBounds.min.x),
+	    int(region.min.y - m_vScreenBounds.min.y),
+	    int(region.max.x - m_vScreenBounds.min.x),
+	    int(region.max.y - m_vScreenBounds.min.y)
+	);
 	PostMessage(m_clickWindow, WindowMessageSetRegion, reinterpret_cast<WPARAM>(m_rgn), 0);
-}
-
-HRGN SurfaceManager::createRgn(std::span<const BoundingBox> regions) {
-	if(regions.empty()) return CreateRectRgn(0, 0, 0, 0);
-
-	size_t byteSize = sizeof(RGNDATAHEADER) + (regions.size() * sizeof(RECT));
-	m_rgnData.resize(byteSize);
-
-	glm::ivec2 min(regions.front().min - m_vScreenBounds.min);
-	glm::ivec2 max(regions.front().max - m_vScreenBounds.min);
-
-	for(const auto& r : regions) {
-		min = glm::min(min, glm::ivec2(r.min - m_vScreenBounds.min));
-		max = glm::max(max, glm::ivec2(r.max - m_vScreenBounds.min));
-	}
-
-	RGNDATA* rgnData = reinterpret_cast<RGNDATA*>(m_rgnData.data());
-	RECT* rectData = reinterpret_cast<RECT*>(rgnData->Buffer);
-
-	rgnData->rdh = {
-		.dwSize = sizeof(RGNDATAHEADER),
-		.iType = RDH_RECTANGLES,
-		.nCount = DWORD(regions.size()),
-		.nRgnSize = DWORD(regions.size() * sizeof(RECT)),
-		.rcBound = RECT{ .left = min.x, .top = min.y, .right = max.x, .bottom = max.y }
-	};
-
-	for(size_t i = 0; i < regions.size(); ++i)
-		rectData[i] = { .left = int(regions[i].min.x - m_vScreenBounds.min.x),
-			            .top = int(regions[i].min.y - m_vScreenBounds.min.y),
-			            .right = int(regions[i].max.x - m_vScreenBounds.min.x),
-			            .bottom = int(regions[i].max.y - m_vScreenBounds.min.y) };
-
-	return ExtCreateRegion(nullptr, byteSize, rgnData);
 }

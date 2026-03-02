@@ -17,7 +17,6 @@ public:
 	virtual std::span<const SpriteDrawable> getSprites() const { return {}; }
 
 	[[nodiscard]] BoundingBox getPhysicsBounds() const { return { localPhysicsBounds.min + position, localPhysicsBounds.max + position }; }
-	[[nodiscard]] BoundingBox getClickBounds() const { return { localClickBounds.min + position, localClickBounds.max + position }; }
 
 	void setScene(Scene* scene) { this->scene = scene; }
 	[[nodiscard]] Scene* getScene() const { return scene; }
@@ -29,7 +28,6 @@ public:
 	uint32_t flags = 0;
 	glm::vec2 position = glm::vec2(0.0f);
 	BoundingBox localPhysicsBounds;
-	BoundingBox localClickBounds;
 
 protected:
 	Scene* scene = nullptr;

@@ -33,14 +33,11 @@ public:
 	[[nodiscard]] size_t getSurfaceCount() const { return m_surfaces.size(); }
 	[[nodiscard]] std::span<const std::unique_ptr<ScreenSurface>> getScreenSurfaces() const { return m_screenSurfaces; }
 
-	void setClickableRegions(std::span<const BoundingBox> regions);
-	bool canPushRegions() const { return m_canPushRegions; }
-	void consumeRegions() { m_canPushRegions = true; }
+	void pushClickableRegion(const BoundingBox region);
+	bool canPushClickableRegion() const { return m_canPushRegion; }
+	void consumeClickableRegion() { m_canPushRegion = true; }
 
 	BoundingBox getVirtualScreenBounds() { return m_vScreenBounds; }
-
-private:
-	HRGN createRgn(std::span<const BoundingBox> regions);
 
 private:
 	static SurfaceManager* s_instance;
@@ -53,6 +50,6 @@ private:
 	BoundingBox m_vScreenBounds;
 
 	HRGN m_rgn;
-	std::atomic_bool m_canPushRegions = true;
+	std::atomic_bool m_canPushRegion = true;
 	std::vector<char> m_rgnData;
 };

@@ -24,7 +24,6 @@ public:
 	void update(const Time& time);
 
 	std::span<const SpriteDrawable> buildSprites();
-	std::span<const BoundingBox> buildClickRegions();
 
 private:
 	std::vector<std::unique_ptr<Entity>> m_entities;
