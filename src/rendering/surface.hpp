@@ -56,8 +56,8 @@ public:
 
 		// clang-format off
 		return glm::mat4(
-			+2.0f / s.x, 0.0f, 0.0f, -1.0f - 2.0 * p.x / s.x,
-			0.0f, -2.0f / s.y, 0.0f, +1.0f + 2.0 * p.y / s.y,
+			+2.0f / s.x, 0.0f, 0.0f, -1.0f - 2.0f * p.x / s.x,
+			0.0f, -2.0f / s.y, 0.0f, +1.0f + 2.0f * p.y / s.y,
 			0.0f, 0.0f, 1.0f, 0.0f,
 			0.0f, 0.0f, 0.0f, 1.0f
 		);
