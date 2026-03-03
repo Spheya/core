@@ -20,6 +20,8 @@ public:
 	const InputAxis1D* getAxis1D(unsigned id) const;
 	const InputAxis2D* getAxis2D(unsigned id) const;
 
+	glm::vec2 getMousePos() const { return m_mousePos; }
+
 private:
 	struct QueuedButton {
 		InputButton id;
@@ -27,6 +29,8 @@ private:
 	};
 
 private:
+	glm::vec2 m_mousePos;
+
 	std::vector<std::unique_ptr<InputResponder>> m_responders;
 	std::unordered_map<unsigned, InputResponder*> m_responderIdMap;
 	std::unordered_map<InputButton, std::vector<InputResponder*>> m_responderInputMap;

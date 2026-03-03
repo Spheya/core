@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include "logger.hpp"
+#include "platform.hpp"
 
 void Input::notifyButtonPress(InputButton button) {
 	std::lock_guard lock(m_inputMutex);
@@ -23,6 +23,10 @@ void Input::update() {
 		for(auto* responder : m_responderInputMap[input.id]) responder->notify(input.id, input.state);
 
 	m_inputButtonQueue.clear();
+
+	POINT p;
+	GetCursorPos(&p);
+	m_mousePos = glm::vec2(p.x, p.y);
 }
 
 void Input::add(unsigned id, std::unique_ptr<InputResponder> responder) {
