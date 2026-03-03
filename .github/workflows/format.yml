@@ -8,19 +8,19 @@ on:
 jobs:
   format:
     name: Check Code Formatting
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v4
 
     - name: Setup clang-format
-      run: sudo apt-get update && sudo apt-get install -y clang-format-21
+      run: sudo apt-get update && sudo apt-get install -y clang-format-19
 
     - name: Run clang-format
       run: |
         result=0
         for file in $(git ls-files '*.cpp' '*.h' '*.hpp' ':!external/**'); do
-          if ! clang-format-21 --dry-run --Werror "$file"; then
+          if ! clang-format-19 --dry-run --Werror "$file"; then
             result=1
           fi
         done
