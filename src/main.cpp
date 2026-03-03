@@ -28,8 +28,6 @@ static void applicationLoop() {
 
 	Time time;
 
-	BoundingBox lineOrigin = { .min = glm::vec2(450.0f, 350.0f), .max = glm::vec2(500.0f, 375.0f) };
-
 	while(!s_closeRequested) {
 		time.update();
 		SurfaceManager::getInstance().getMainInput().update();
@@ -37,26 +35,6 @@ static void applicationLoop() {
 		windowPhysics.update();
 
 		scene.update(time);
-
-#ifdef _DEBUG
-		GraphicsContext::getInstance().getDebugRenderer().box(lineOrigin, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-
-		glm::vec2 bCenter = (lineOrigin.min + lineOrigin.max) * 0.5f;
-		glm::vec2 rd = glm::normalize(SurfaceManager::getInstance().getMainInput().getMousePos() - bCenter);
-		float maxDist = 1e32f; // glm::distance(SurfaceManager::getInstance().getMainInput().getMousePos(), bCenter);
-		Intersection hit = windowPhysics.boxCast(lineOrigin, rd, maxDist);
-		glm::vec2 hitPos = bCenter + rd * hit.distance;
-
-		BoundingBox tmp{
-			.min = (lineOrigin.min - bCenter) + hitPos,
-			.max = (lineOrigin.max - bCenter) + hitPos,
-		};
-
-		GraphicsContext::getInstance().getDebugRenderer().line(bCenter, hitPos);
-		GraphicsContext::getInstance().getDebugRenderer().line(hitPos, hitPos + hit.normal * 32.0f, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
-		GraphicsContext::getInstance().getDebugRenderer().box(tmp);
-
-#endif
 
 		for(const auto& surface : SurfaceManager::getInstance().getScreenSurfaces()) {
 			Camera camera = { .view = glm::mat4(1.0f), .proj = surface->getProjectionMatrix(), .target = surface.get() };
