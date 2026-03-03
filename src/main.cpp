@@ -1,5 +1,7 @@
 #include <thread>
 
+#include "physics/intersection.hpp"
+#include "physics/window_physics.hpp"
 #include "platform.hpp"
 #include "rendering/animation.hpp"
 #include "rendering/graphics_context.hpp"
@@ -12,9 +14,15 @@
 static std::atomic_bool s_closeRequested; // NOLINT
 
 static void applicationLoop() {
+	WindowPhysics windowPhysics;
+	windowPhysics.generateScreenBounds();
+
 	Scene scene;
+	scene.addWindowPhysics(&windowPhysics);
+
 	auto* player = scene.addEntity(std::make_unique<Player>());
 	player->position = glm::vec2(48.0f, 48.0f);
+	player->flags = 1;
 
 	SurfaceManager::getInstance().getMainInput().add(0, std::make_unique<InputAction>(InputButton::MouseButtonLeft));
 
@@ -24,6 +32,7 @@ static void applicationLoop() {
 		time.update();
 		SurfaceManager::getInstance().getMainInput().update();
 		if(SurfaceManager::getInstance().getMainInput().getAction(0)->isPressed()) { logger::log("yippe"); }
+		windowPhysics.update();
 
 		scene.update(time);
 

@@ -29,6 +29,61 @@ void Scene::update(const Time& time) {
 #endif
 }
 
+void Scene::addWindowPhysics(const WindowPhysics* windowPhysics) {
+	m_windowPhysics = windowPhysics;
+}
+
+bool Scene::overlaps(const BoundingBox& box, uint32_t flags, const Entity* exclude, bool includeWindows) const {
+	for(const auto& entity : m_entities) {
+		if(entity.get() == exclude || (entity->flags & flags) == 0) continue;
+		auto bounds = entity->getPhysicsBounds();
+		if(::overlaps(box, bounds)) return true;
+	}
+
+	if(includeWindows && m_windowPhysics) return m_windowPhysics->overlaps(box);
+	return false;
+}
+
+Intersection Scene::rayCast(
+    glm::vec2 origin, glm::vec2 direction, float maxDistance, uint32_t flags, const Entity* exclude, bool includeWindows
+) const {
+	Intersection hit{ .distance = maxDistance, .normal = glm::vec2(0.0f) };
+
+	for(const auto& entity : m_entities) {
+		if(entity.get() == exclude || (entity->flags & flags) == 0) continue;
+		auto bounds = entity->getPhysicsBounds();
+		auto newHit = ::rayCast(origin, direction, bounds, hit.distance, RayCastExclude::Exit);
+		if(newHit.distance != hit.distance) hit = newHit;
+	}
+
+	if(includeWindows && m_windowPhysics) {
+		auto newHit = m_windowPhysics->rayCast(origin, direction, hit.distance);
+		if(newHit.distance != hit.distance) hit = newHit;
+	}
+
+	return hit;
+}
+
+Intersection Scene::boxCast(
+    const BoundingBox& origin, glm::vec2 direction, float maxDistance, uint32_t flags, const Entity* exclude, bool includeWindows
+) const {
+	Intersection hit{ .distance = maxDistance, .normal = glm::vec2(0.0f) };
+
+	for(const auto& entity : m_entities) {
+		if(entity.get() == exclude || (entity->flags & flags) == 0) continue;
+		auto bounds = entity->getPhysicsBounds();
+		auto newHit = ::boxCast(origin, direction, bounds, hit.distance, RayCastExclude::Exit);
+		if(newHit.distance != hit.distance) hit = newHit;
+	}
+
+	if(includeWindows && m_windowPhysics) {
+		auto newHit = m_windowPhysics->boxCast(origin, direction, hit.distance);
+		if(newHit.distance != hit.distance) hit = newHit;
+	}
+
+	return hit;
+}
+
 std::span<const SpriteDrawable> Scene::buildSprites() {
 	m_sprites.clear();
 

@@ -129,7 +129,7 @@ SurfaceManager::SurfaceManager(HINSTANCE hInstance) : m_rgn(nullptr), m_vScreenB
 	int vScreenW = GetSystemMetrics(SM_CXVIRTUALSCREEN);
 	int vScreenH = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
-	m_vScreenBounds = BoundingBox{ .min = glm::vec2(vScreenX, vScreenY), .max = glm::vec2(vScreenW - vScreenX, vScreenH - vScreenY) };
+	m_vScreenBounds = BoundingBox{ .min = glm::vec2(vScreenX, vScreenY), .max = glm::vec2(vScreenX + vScreenW, vScreenY + vScreenH) };
 
 	m_clickWindow = CreateWindowEx(
 	    WS_EX_LAYERED | WS_EX_NOREDIRECTIONBITMAP | WS_EX_TOPMOST | WS_EX_TOOLWINDOW,

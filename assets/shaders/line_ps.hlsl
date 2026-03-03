@@ -6,5 +6,5 @@ struct Varyings
 
 float4 main(Varyings varyings) : SV_TARGET
 {
-    return varyings.color;
+    return float4(varyings.color.rgb * varyings.color.a, varyings.color.a);
 }
