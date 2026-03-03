@@ -7,10 +7,27 @@ constexpr UINT WindowMessageSetRegion = WM_APP + 1;
 
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch(msg) {
+	case WM_CLOSE: DestroyWindow(hWnd); break;
+	case WM_DESTROY: PostQuitMessage(0); break;
+	default: return DefWindowProc(hWnd, msg, wParam, lParam);
+	}
+	return 0;
+}
+
+static LRESULT CALLBACK ClickWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	switch(msg) {
 	case WindowMessageSetRegion:
 		SetWindowRgn(hWnd, reinterpret_cast<HRGN>(wParam), false); // NOLINT
 		SurfaceManager::getInstance().consumeClickableRegion();
 		break;
+	case WM_LBUTTONDOWN: SurfaceManager::getInstance().getMainInput().notifyButtonPress(InputButton::MouseButtonLeft); break;
+	case WM_LBUTTONUP: SurfaceManager::getInstance().getMainInput().notifyButtonRelease(InputButton::MouseButtonLeft); break;
+	case WM_RBUTTONDOWN: SurfaceManager::getInstance().getMainInput().notifyButtonPress(InputButton::MouseButtonRight); break;
+	case WM_RBUTTONUP: SurfaceManager::getInstance().getMainInput().notifyButtonRelease(InputButton::MouseButtonRight); break;
+	case WM_MBUTTONDOWN: SurfaceManager::getInstance().getMainInput().notifyButtonPress(InputButton::MouseButtonMiddle); break;
+	case WM_MBUTTONUP: SurfaceManager::getInstance().getMainInput().notifyButtonRelease(InputButton::MouseButtonMiddle); break;
+	case WM_KEYDOWN: SurfaceManager::getInstance().getMainInput().notifyButtonPress(InputButton((lParam >> 16) & 0x1FF)); break;
+	case WM_KEYUP: SurfaceManager::getInstance().getMainInput().notifyButtonRelease(InputButton((lParam >> 16) & 0x1FF)); break;
 	case WM_CLOSE: DestroyWindow(hWnd); break;
 	case WM_DESTROY: PostQuitMessage(0); break;
 	default: return DefWindowProc(hWnd, msg, wParam, lParam);
@@ -26,6 +43,14 @@ static void initializeWindowClasses(HINSTANCE hInstance) {
 	windowClass.lpszClassName = L"Window";
 	windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	RegisterClass(&windowClass);
+
+	WNDCLASS clickWindowClass = {};
+	clickWindowClass.style = 0;
+	clickWindowClass.lpfnWndProc = ClickWndProc;
+	clickWindowClass.hInstance = hInstance;
+	clickWindowClass.lpszClassName = L"ClickWindow";
+	clickWindowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	RegisterClass(&clickWindowClass);
 }
 
 static BOOL CALLBACK createScreenSurface(HMONITOR hMonitor, HDC /* hdcMonitor */, LPRECT /* lprcMonitor */, LPARAM lParam) {
@@ -78,7 +103,7 @@ static BOOL CALLBACK createScreenSurface(HMONITOR hMonitor, HDC /* hdcMonitor */
 	SurfaceManager::getInstance().m_screenSurfaces.emplace_back(
 	    std::make_unique<ScreenSurface>(hWnd, std::move(swapchain), glm::uvec2(w, h), glm::ivec2(x, y))
 	);
-	ShowWindow(hWnd, SW_SHOW);
+	ShowWindow(hWnd, SW_SHOWNOACTIVATE);
 
 	return TRUE;
 }
@@ -96,7 +121,7 @@ void SurfaceManager::close() {
 	s_instance = nullptr;
 }
 
-SurfaceManager::SurfaceManager(HINSTANCE hInstance) : m_vScreenBounds{}, m_rgn(nullptr) {
+SurfaceManager::SurfaceManager(HINSTANCE hInstance) : m_rgn(nullptr), m_vScreenBounds{} {
 	initializeWindowClasses(hInstance);
 
 	int vScreenX = GetSystemMetrics(SM_XVIRTUALSCREEN);
@@ -108,7 +133,7 @@ SurfaceManager::SurfaceManager(HINSTANCE hInstance) : m_vScreenBounds{}, m_rgn(n
 
 	m_clickWindow = CreateWindowEx(
 	    WS_EX_LAYERED | WS_EX_NOREDIRECTIONBITMAP | WS_EX_TOPMOST | WS_EX_TOOLWINDOW,
-	    L"Window",
+	    L"ClickWindow",
 	    L"",
 	    WS_POPUP,
 	    vScreenX,

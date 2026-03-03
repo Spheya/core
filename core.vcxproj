@@ -123,6 +123,8 @@
     <AtlasInputs Include="assets\**\*.png" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\input\input.cpp" />
+    <ClCompile Include="src\input\input_responder.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\rendering\debug_renderer.cpp" />
     <ClCompile Include="src\rendering\mesh.cpp" />
@@ -134,6 +136,9 @@
     <ClCompile Include="src\scene\scene.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\input\input.hpp" />
+    <ClInclude Include="src\input\input_buttons.hpp" />
+    <ClInclude Include="src\input\input_responder.hpp" />
     <ClInclude Include="src\physics\bounding_box.hpp" />
     <ClInclude Include="src\rendering\animation.hpp" />
     <ClInclude Include="src\rendering\camera.hpp" />

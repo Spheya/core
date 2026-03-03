@@ -5,6 +5,7 @@
 #include <span>
 #include <vector>
 
+#include "input/input.hpp"
 #include "physics/bounding_box.hpp"
 #include "surface.hpp"
 
@@ -38,6 +39,7 @@ public:
 	void consumeClickableRegion() { m_canPushRegion = true; }
 
 	BoundingBox getVirtualScreenBounds() { return m_vScreenBounds; }
+	Input& getMainInput() { return m_input; }
 
 private:
 	static SurfaceManager* s_instance;
@@ -46,10 +48,11 @@ private:
 	std::unordered_map<HWND, Surface*> m_surfaces;
 	std::vector<std::unique_ptr<ScreenSurface>> m_screenSurfaces;
 	HWND m_clickWindow;
-
-	BoundingBox m_vScreenBounds;
+	Input m_input;
 
 	HRGN m_rgn;
 	std::atomic_bool m_canPushRegion = true;
 	std::vector<char> m_rgnData;
+
+	BoundingBox m_vScreenBounds;
 };
