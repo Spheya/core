@@ -16,10 +16,15 @@ static void applicationLoop() {
 	auto* player = scene.addEntity(std::make_unique<Player>());
 	player->position = glm::vec2(48.0f, 48.0f);
 
+	SurfaceManager::getInstance().getMainInput().add(0, std::make_unique<InputAction>(InputButton::MouseButtonLeft));
+
 	Time time;
 
 	while(!s_closeRequested) {
 		time.update();
+		SurfaceManager::getInstance().getMainInput().update();
+		if(SurfaceManager::getInstance().getMainInput().getAction(0)->isPressed()) { logger::log("yippe"); }
+
 		scene.update(time);
 
 		for(const auto& surface : SurfaceManager::getInstance().getScreenSurfaces()) {
