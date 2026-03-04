@@ -17,6 +17,8 @@ constexpr static float slideJumpSpeed = 2000.0f;
 constexpr static float slideJumpHeight = 125.0f;
 constexpr static float slideVelocityMult = 2.5f;
 constexpr static float slideCooldown = 0.25f;
+constexpr static float downwardsGravityMult = 1.2f;
+constexpr static float releaseGravityMult = 3.0f;
 
 constexpr static float jumpForce = 4.0f * jumpHeight / jumpDuration;
 constexpr static float gravity = 2.0f * jumpForce / jumpDuration;
@@ -68,7 +70,7 @@ void Player::onUpdate(const Time& time) {
 		m_velocity.y = -force;
 	}
 
-	// select the correct friction coefficient
+	// select physics constants based on state
 	float frictionCoefficient = friction;
 	if(!grounded) frictionCoefficient = airFriction;
 	if(grounded && duck) {
@@ -76,11 +78,18 @@ void Player::onUpdate(const Time& time) {
 		inputDir = 0.0f;
 	}
 
+	float gravityCoefficient = gravity;
+	if(m_velocity.y > 0.0f) {
+		gravityCoefficient *= downwardsGravityMult;
+	} else {
+		if(!jump) gravityCoefficient *= releaseGravityMult;
+	}
+
 	// move the rabbit
 	glm::vec2 prevVelocity = m_velocity;                                                   // we do this after all instantanious forces are applied
 	m_velocity.x += inputDir * speed * frictionCoefficient * time.deltaTime();             // movement
 	m_velocity.x -= m_velocity.x * std::min(frictionCoefficient * time.deltaTime(), 1.0f); // friction
-	m_velocity.y += gravity * time.deltaTime();                                            // gravity
+	m_velocity.y += gravityCoefficient * time.deltaTime();                                 // gravity
 	move((m_velocity + prevVelocity) * 0.5f * time.deltaTime());
 
 	// select the correct animation for our bunny
