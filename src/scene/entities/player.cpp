@@ -16,6 +16,7 @@ Player::Player(CharacterAnimations animations, const Input* input) :
     m_jumpInput(input ? input->getAction(InputId_PlayerJump) : nullptr),
     m_duckInput(input ? input->getAction(InputId_PlayerDuck) : nullptr),
     m_velocity(0.0f),
+    m_grounded(false),
     m_flipped(false),
     m_animator(std::move(animations)) {
 	localPhysicsBounds = { .min = glm::vec2(-10.0f, 16.0f), .max = glm::vec2(10.0f, 48.0f) };
@@ -33,10 +34,12 @@ void Player::onUpdate(const Time& time) {
 	float inputDir = m_movementInput ? m_movementInput->getValue() : 0.0f;
 	bool jump = m_jumpInput ? m_jumpInput->isDown() : false;
 	// bool jumpPress = m_jumpInput ? m_jumpInput->isPressed() : false;
-	// bool duck = m_duckInput ? m_duckInput->isDown() : false;
+	bool duck = m_duckInput ? m_duckInput->isDown() : false;
 
 	float horAcc = inputDir * speed * friction;
 	float fric = m_velocity.x * std::min(friction * time.deltaTime(), 1.0f);
+
+	m_grounded = scene->boxCast(getPhysicsBounds(), glm::vec2(0.0f, 1.0f), 1.0f, ~0u, this).distance != 1.0f;
 
 	glm::vec2 prevVelocity = m_velocity;
 
@@ -51,16 +54,21 @@ void Player::onUpdate(const Time& time) {
 
 	move((m_velocity + prevVelocity) * 0.5f * time.deltaTime());
 
+	if(inputDir < 0.0f) {
+		m_flipped = true;
+	} else if(inputDir > 0.0f) {
+		m_flipped = false;
+	}
+
 	if(m_grounded) {
 		if(inputDir != 0.0f) {
 			m_animator.setAnimation(CharacterAnimation::Run);
-			if(inputDir < 0.0f) {
-				m_flipped = true;
-			} else if(inputDir > 0.0f) {
-				m_flipped = false;
-			}
 		} else {
-			m_animator.setAnimation(CharacterAnimation::Idle);
+			if(duck) {
+				m_animator.setAnimation(CharacterAnimation::Duck);
+			} else {
+				m_animator.setAnimation(CharacterAnimation::Idle);
+			}
 		}
 	} else {
 		if(m_velocity.y < 0.0f) {
@@ -90,34 +98,32 @@ void Player::updateClickableRegion() {
 }
 
 void Player::move(glm::vec2 delta) {
-	m_grounded = false;
+	constexpr float err = 0.25f;
 
 	float movLength = glm::length(delta);
 	glm::vec2 movDirection = delta / movLength;
+	float testLength = movLength + err;
 
-	Intersection hit = scene->boxCast(getPhysicsBounds(), movDirection, movLength, ~0u, this);
-	if(hit.distance != movLength) {
-		position += movDirection * std::max(hit.distance - 0.25f, 0.0f);
+	Intersection hit = scene->boxCast(getPhysicsBounds(), movDirection, testLength, ~0u, this);
+	if(hit.distance == testLength) {
+		position += movDirection * movLength;
+	} else {
+		position += movDirection * (hit.distance - err);
 		m_velocity -= glm::dot(hit.normal, m_velocity) * hit.normal;
-
-		if(hit.normal.y < -0.5f) m_grounded = true;
 
 		delta -= glm::dot(hit.normal, delta) * hit.normal;
 		if(dot(delta, delta) > 0.1f) {
 			movLength = glm::length(delta);
 			movDirection = delta / movLength;
+			testLength = movLength + err;
 
-			hit = scene->boxCast(getPhysicsBounds(), movDirection, movLength, ~0u, this);
-			if(hit.distance != movLength) {
-				position += movDirection * std::max(hit.distance - 0.25f, 0.0f);
-				m_velocity -= glm::dot(hit.normal, m_velocity) * hit.normal;
-
-				if(hit.normal.y < -0.5f) m_grounded = true;
+			hit = scene->boxCast(getPhysicsBounds(), movDirection, testLength, ~0u, this);
+			if(hit.distance == testLength) {
+				position += movDirection * movLength;
 			} else {
-				position += movDirection * hit.distance;
+				position += movDirection * (hit.distance - err);
+				m_velocity -= glm::dot(hit.normal, m_velocity) * hit.normal;
 			}
 		}
-	} else {
-		position += movDirection * hit.distance;
 	}
 }
