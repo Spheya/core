@@ -176,6 +176,8 @@ void Player::updateClickableRegion() {
 }
 
 void Player::move(glm::vec2 delta) {
+	if(dot(delta, delta) < 0.001f) return;
+
 	constexpr float err = 0.25f;
 
 	float movLength = glm::length(delta);
@@ -190,7 +192,7 @@ void Player::move(glm::vec2 delta) {
 		m_velocity -= glm::dot(hit.normal, m_velocity) * hit.normal;
 
 		delta -= glm::dot(hit.normal, delta) * hit.normal;
-		if(dot(delta, delta) > 0.1f) {
+		if(dot(delta, delta) > 0.001f) {
 			movLength = glm::length(delta);
 			movDirection = delta / movLength;
 			testLength = movLength + err;
