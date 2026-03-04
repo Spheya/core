@@ -23,6 +23,7 @@ constexpr static float releaseGravityMult = 3.0f;
 
 constexpr static float slideBufferTime = 0.25f;
 constexpr static float duckJumpBufferTime = 0.25f;
+constexpr static float slideJumpBufferTime = 0.25f;
 constexpr static float jumpBuffertime = 0.25f;
 constexpr static float coyoteTime = 0.25f;
 
@@ -40,6 +41,7 @@ Player::Player(CharacterAnimations animations, const Input* input) :
     m_slideCooldown(0.0f),
     m_slideBuffer(0.0f),
     m_duckJumpBuffer(0.0f),
+    m_slideJumpBuffer(0.0f),
     m_jumpBuffer(0.0f),
     m_coyoteTime(0.0f),
     m_flipped(false),
@@ -62,6 +64,7 @@ void Player::onUpdate(const Time& time) {
 	m_slideCooldown -= time.deltaTime();
 	m_slideBuffer -= time.deltaTime();
 	m_duckJumpBuffer -= time.deltaTime();
+	m_slideJumpBuffer -= time.deltaTime();
 	m_jumpBuffer -= time.deltaTime();
 	m_coyoteTime -= time.deltaTime();
 
@@ -72,7 +75,8 @@ void Player::onUpdate(const Time& time) {
 	bool duckPressed = m_duckInput ? m_duckInput->isPressed() : false;
 	bool slide = grounded && duck && std::abs(m_velocity.x) > 200.0f;
 
-	if(duck && !slide) m_duckJumpBuffer = duckJumpBufferTime;
+	if(duck && !slide && grounded) m_duckJumpBuffer = duckJumpBufferTime;
+	if(slide) m_slideJumpBuffer = slideJumpBufferTime;
 	if(duckPressed) m_slideBuffer = slideBufferTime;
 	if(jumpPressed) m_jumpBuffer = jumpBuffertime;
 	if(grounded) m_coyoteTime = coyoteTime;
@@ -91,7 +95,7 @@ void Player::onUpdate(const Time& time) {
 
 		float force = jumpForce;
 		if(m_duckJumpBuffer > 0.0f && !slide) force = duckJumpForce;
-		if(slide) {
+		if(m_slideJumpBuffer > std::max(0.0f, m_duckJumpBuffer)) {
 			m_velocity.x = glm::sign(m_velocity.x) * slideJumpSpeed;
 			force = slideJumpForce;
 		}

@@ -30,6 +30,7 @@ private:
 
 	float m_slideBuffer;
 	float m_duckJumpBuffer;
+	float m_slideJumpBuffer;
 	float m_jumpBuffer;
 	float m_coyoteTime;
 
