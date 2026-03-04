@@ -1,9 +1,9 @@
 #include <thread>
 
+#include "input/input_ids.hpp"
 #include "physics/intersection.hpp"
 #include "physics/window_physics.hpp"
 #include "platform.hpp"
-#include "rendering/animation.hpp"
 #include "rendering/graphics_context.hpp"
 #include "rendering/sprite_atlas.hpp"
 #include "rendering/surface_manager.hpp"
@@ -14,24 +14,45 @@
 static std::atomic_bool s_closeRequested; // NOLINT
 
 static void applicationLoop() {
+	Sprite playerSprites[] = {
+		SpriteAtlas::getInstance().get("player_duck.png"),   SpriteAtlas::getInstance().get("player_fall.png"),
+		SpriteAtlas::getInstance().get("player_idle_1.png"), SpriteAtlas::getInstance().get("player_idle_2.png"),
+		SpriteAtlas::getInstance().get("player_jump.png"),   SpriteAtlas::getInstance().get("player_run_1.png"),
+		SpriteAtlas::getInstance().get("player_run_2.png"),  SpriteAtlas::getInstance().get("player_run_3.png"),
+		SpriteAtlas::getInstance().get("player_run_4.png"),  SpriteAtlas::getInstance().get("player_run_5.png"),
+		SpriteAtlas::getInstance().get("player_run_6.png"),  SpriteAtlas::getInstance().get("player_slide.png"),
+	};
+
+	CharacterAnimations playerAnimations = {
+		.idle = Animation(std::span(&playerSprites[2], 2), 24, 8),
+		.run = Animation(std::span(&playerSprites[5], 6), 24, 2),
+		.jump = Animation(std::span(&playerSprites[4], 1), 24, 2),
+		.fall = Animation(std::span(&playerSprites[1], 1), 24, 2),
+		.slide = Animation(std::span(&playerSprites[11], 1), 24, 2),
+		.duck = Animation(std::span(&playerSprites[0], 1), 24, 2),
+	};
+
 	WindowPhysics windowPhysics;
 	windowPhysics.generateScreenBounds();
 
 	Scene scene;
 	scene.addWindowPhysics(&windowPhysics);
 
-	auto* player = scene.addEntity(std::make_unique<Player>());
+	SurfaceManager::getInstance().getMainInput().add(
+	    InputId_PlayerMovement, std::make_unique<InputAxis1D>(InputButton::KeyRight, InputButton::KeyLeft)
+	);
+	SurfaceManager::getInstance().getMainInput().add(InputId_PlayerJump, std::make_unique<InputAction>(InputButton::KeyUp));
+	SurfaceManager::getInstance().getMainInput().add(InputId_PlayerDuck, std::make_unique<InputAction>(InputButton::KeyDown));
+
+	auto* player = scene.addEntity(std::make_unique<Player>(std::move(playerAnimations), &SurfaceManager::getInstance().getMainInput()));
 	player->position = glm::vec2(48.0f, 48.0f);
 	player->flags = 1;
-
-	SurfaceManager::getInstance().getMainInput().add(0, std::make_unique<InputAction>(InputButton::MouseButtonLeft));
 
 	Time time;
 
 	while(!s_closeRequested) {
 		time.update();
 		SurfaceManager::getInstance().getMainInput().update();
-		if(SurfaceManager::getInstance().getMainInput().getAction(0)->isPressed()) { logger::log("yippe"); }
 		windowPhysics.update();
 
 		scene.update(time);

@@ -3,14 +3,14 @@
 #include <span>
 #include <vector>
 
-#include "sprite.hpp"
+#include "rendering/sprite.hpp"
 #include "time.hpp"
 
 class Animation {
 public:
 	Animation() = default;
 
-	Animation(std::span<Sprite> sprites, unsigned frameRate, unsigned animateOn, unsigned frameAnimationOffset = 0) :
+	Animation(std::span<const Sprite> sprites, unsigned frameRate, unsigned animateOn, unsigned frameAnimationOffset = 0) :
 	    frameRate(frameRate),
 	    animateOn(animateOn),
 	    frameAnimationOffset(frameAnimationOffset),
@@ -28,7 +28,7 @@ public:
 		m_currentSprite = m_sprites.begin() + unsigned(frame % m_sprites.size());
 	}
 
-	const Sprite& getCurrentFrame() { return *m_currentSprite; }
+	[[nodiscard]] const Sprite& getCurrentFrame() const { return *m_currentSprite; }
 
 public:
 	unsigned frameRate = 0;
@@ -42,6 +42,6 @@ private:
 
 private:
 	std::vector<Sprite> m_sprites;
-	std::vector<Sprite>::iterator m_currentSprite;
+	std::vector<Sprite>::const_iterator m_currentSprite;
 	unsigned long long m_animationOffset = 0;
 };

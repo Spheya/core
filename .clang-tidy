@@ -29,6 +29,7 @@ Checks: >
   -modernize-use-nullptr,
   -modernize-use-trailing-return-type,
   -modernize-return-braced-init-list,
+  -performance-enum-size,
   -readability-braces-around-statements,
   -readability-function-cognitive-complexity,
   -readability-identifier-length,
