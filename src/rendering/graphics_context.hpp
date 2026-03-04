@@ -51,6 +51,7 @@ private:
 	ComPtr<ID3D11PixelShader> m_defaultPixelShader;
 
 	ComPtr<ID3D11SamplerState> m_pointSampler;
+	ComPtr<ID3D11RasterizerState> m_noCull;
 
 	std::unique_ptr<Mesh> m_quadMesh;
 

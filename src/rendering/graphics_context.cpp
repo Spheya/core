@@ -65,6 +65,12 @@ GraphicsContext::GraphicsContext() {
 	// Setup factory
 	handleFatalError(CreateDXGIFactory(IID_PPV_ARGS(&m_factory)), "Could not create IDXGIFactory");
 
+	// Setup Rasterizer States
+	D3D11_RASTERIZER_DESC noCullDesc = {};
+	noCullDesc.FillMode = D3D11_FILL_SOLID;
+	noCullDesc.CullMode = D3D11_CULL_NONE;
+	m_device->CreateRasterizerState(&noCullDesc, m_noCull.GetAddressOf());
+
 	// Setup buffers
 	D3D11_BUFFER_DESC cameraBufferDesc = {};
 	cameraBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -166,6 +172,7 @@ void GraphicsContext::drawSprites(const Camera& camera, std::span<const SpriteDr
 	UINT offsets[] = { 0, 0 };
 	ID3D11Buffer* vertexBuffers[] = { m_quadMesh->m_vertexBuffer.Get(), m_instanceBuffer.Get() };
 
+	m_context->RSSetState(m_noCull.Get());
 	m_context->VSSetShader(m_defaultVertexShader.Get(), nullptr, 0);
 	m_context->PSSetShader(m_defaultPixelShader.Get(), nullptr, 0);
 	m_context->PSSetShaderResources(0, 1, &srv);
