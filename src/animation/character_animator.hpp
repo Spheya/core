@@ -22,6 +22,7 @@ public:
 	void update(const Time& time);
 	void reset();
 	[[nodiscard]] const Sprite& getCurrentFrame() const { return m_currentAnimation->getCurrentFrame(); }
+	[[nodiscard]] const Animation& getCurrentAnimation() const { return *m_currentAnimation; }
 
 private:
 	std::unique_ptr<CharacterAnimations> m_animations;

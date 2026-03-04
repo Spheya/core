@@ -147,6 +147,8 @@ void Player::onUpdate(const Time& time) {
 	}
 
 	m_animator.update(time);
+
+	m_clickAnimation.frameAnimationOffset = m_animator.getCurrentAnimation().frameAnimationOffset;
 	m_clickAnimation.update(time);
 
 	// update the visuals
