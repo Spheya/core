@@ -12,6 +12,7 @@ class Input {
 public:
 	void notifyButtonPress(InputButton button);
 	void notifyButtonRelease(InputButton button);
+	void notifyFocus(bool focus) { m_focus = focus; }
 
 	void update();
 
@@ -21,6 +22,7 @@ public:
 	const InputAxis2D* getAxis2D(unsigned id) const;
 
 	glm::vec2 getMousePos() const { return m_mousePos; }
+	bool hasFocus() const { return m_focus; }
 
 private:
 	struct QueuedButton {
@@ -30,6 +32,7 @@ private:
 
 private:
 	glm::vec2 m_mousePos;
+	bool m_focus;
 
 	std::vector<std::unique_ptr<InputResponder>> m_responders;
 	std::unordered_map<unsigned, InputResponder*> m_responderIdMap;

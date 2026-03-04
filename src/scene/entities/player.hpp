@@ -20,6 +20,7 @@ private:
 	void move(glm::vec2 delta);
 
 private:
+	const Input* m_input;
 	const InputAxis1D* m_movementInput;
 	const InputAction* m_jumpInput;
 	const InputAction* m_duckInput;
@@ -33,5 +34,8 @@ private:
 
 	bool m_flipped;
 	SpriteDrawable m_sprite;
+	SpriteDrawable m_clickSprite;
+
 	CharacterAnimator m_animator;
+	Animation m_clickAnimation;
 };

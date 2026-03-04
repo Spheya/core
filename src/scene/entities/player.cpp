@@ -4,6 +4,7 @@
 
 #include "input/input_ids.hpp"
 #include "rendering/graphics_context.hpp"
+#include "rendering/sprite_atlas.hpp"
 #include "rendering/surface_manager.hpp"
 
 constexpr static float speed = 500.0f;
@@ -30,6 +31,7 @@ const static float duckJumpForce = std::sqrt(2.0f * gravity * duckJumpHeight); /
 const static float slideJumpForce = std::sqrt(2.0f * gravity * slideJumpHeight);
 
 Player::Player(CharacterAnimations animations, const Input* input) :
+    m_input(input),
     m_movementInput(input ? input->getAxis1D(InputId_PlayerMovement) : nullptr),
     m_jumpInput(input ? input->getAction(InputId_PlayerJump) : nullptr),
     m_duckInput(input ? input->getAction(InputId_PlayerDuck) : nullptr),
@@ -40,10 +42,14 @@ Player::Player(CharacterAnimations animations, const Input* input) :
     m_coyoteTime(0.0f),
     m_flipped(false),
     m_animator(std::move(animations)) {
+	const Sprite clickAnim[] = { SpriteAtlas::getInstance().get("mouse.png"), SpriteAtlas::getInstance().get("mouse_left.png") };
+	m_clickAnimation = Animation(clickAnim, 24, 8); // todo: not hardcode this or sth
+
 	localPhysicsBounds = { .min = glm::vec2(-10.0f, 16.0f), .max = glm::vec2(10.0f, 48.0f) };
 }
 
 void Player::setInput(const Input* input) {
+	m_input = input;
 	m_movementInput = input ? input->getAxis1D(InputId_PlayerMovement) : nullptr;
 	m_jumpInput = input ? input->getAction(InputId_PlayerJump) : nullptr;
 	m_duckInput = input ? input->getAction(InputId_PlayerDuck) : nullptr;
@@ -141,20 +147,26 @@ void Player::onUpdate(const Time& time) {
 	}
 
 	m_animator.update(time);
+	m_clickAnimation.update(time);
 
 	// update the visuals
 	m_sprite.sprite = m_animator.getCurrentFrame();
 	m_sprite.matrix =
 	    glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0.0f)), glm::vec3(m_flipped ? -96.0f : 96.0f, 96.0f, 1.0f));
+
+	m_clickSprite.sprite = m_clickAnimation.getCurrentFrame();
+	m_clickSprite.matrix =
+	    glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(position.x + 16.0f, position.y, 0.0f)), glm::vec3(32.0f, 32.0f, 1.0f));
+
 	updateClickableRegion();
 }
 
 std::span<const SpriteDrawable> Player::getSprites() const {
-	return std::span<const SpriteDrawable>(&m_sprite, 1);
+	return std::span<const SpriteDrawable>(&m_sprite, (m_input && !m_input->hasFocus()) ? 2 : 1);
 }
 
 void Player::updateClickableRegion() {
-	BoundingBox clickBounds = { .min = glm::vec2(-32.0f, -8.0f) + position, .max = glm::vec2(32.0f, 48.0f) + position };
+	BoundingBox clickBounds = { .min = glm::vec2(-32.0f, -14.0f) + position, .max = glm::vec2(32.0f, 48.0f) + position };
 #ifdef _DEBUG
 	GraphicsContext::getInstance().getDebugRenderer().box(clickBounds);
 #endif
