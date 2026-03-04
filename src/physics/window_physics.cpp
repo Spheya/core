@@ -16,7 +16,6 @@ void WindowPhysics::update() {
 		if(GetWindow(hwnd, GW_OWNER) != nullptr) continue;
 		if(GetWindowLongPtr(hwnd, GWL_EXSTYLE) & (WS_EX_TOOLWINDOW | WS_EX_TOPMOST)) continue;
 		if(GetWindowLongPtr(hwnd, GWL_STYLE) & (WS_CHILD | WS_POPUP)) continue;
-		if(IsZoomed(hwnd)) continue;
 
 		RECT rect;
 		if(GetWindowRect(hwnd, &rect)) m_hitboxes.emplace_back(glm::vec2(rect.left, rect.top), glm::vec2(rect.right, rect.bottom));
