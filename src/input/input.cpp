@@ -14,6 +14,12 @@ void Input::notifyButtonRelease(InputButton button) {
 	m_inputButtonQueue.emplace_back(button, false);
 }
 
+void Input::notifyFocus(bool focus) {
+	m_focus = focus;
+	if(!focus)
+		for(const auto& responder : m_responders) responder->clearState();
+}
+
 void Input::update() {
 	std::lock_guard lock(m_inputMutex);
 

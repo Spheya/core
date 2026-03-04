@@ -12,7 +12,7 @@ class Input {
 public:
 	void notifyButtonPress(InputButton button);
 	void notifyButtonRelease(InputButton button);
-	void notifyFocus(bool focus) { m_focus = focus; }
+	void notifyFocus(bool focus);
 
 	void update();
 
