@@ -19,7 +19,7 @@ void WindowPhysics::update() {
 
 		RECT rect;
 		if(GetWindowRect(hwnd, &rect))
-			m_hitboxes.emplace_back(BoundingBox{ glm::vec2(rect.left, rect.top), glm::vec2(rect.right, rect.bottom) }, IsZoomed(hwnd));
+			m_hitboxes.emplace_back(BoundingBox{ .min = glm::vec2(rect.left, rect.top), .max = glm::vec2(rect.right, rect.bottom) }, IsZoomed(hwnd));
 	}
 
 #ifdef _DEBUG

@@ -12,7 +12,7 @@ void CharacterAnimator::setAnimation(CharacterAnimation animation) {
 }
 
 void CharacterAnimator::update(const Time& time) {
-	if(m_shouldReset == true) {
+	if(m_shouldReset) {
 		m_currentAnimation->reset(time);
 		m_shouldReset = false;
 	} else {

@@ -147,7 +147,7 @@ void SurfaceManager::close() {
 	s_instance = nullptr;
 }
 
-SurfaceManager::SurfaceManager(HINSTANCE hInstance) : m_rgn(nullptr), m_vScreenBounds{} {
+SurfaceManager::SurfaceManager(HINSTANCE hInstance) : m_clickWindow(nullptr), m_rgn(nullptr), m_vScreenBounds{} {
 	initializeWindowClasses(hInstance);
 
 	int vScreenX = GetSystemMetrics(SM_XVIRTUALSCREEN);
