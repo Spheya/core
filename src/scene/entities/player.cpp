@@ -147,7 +147,7 @@ void Player::onUpdate(const Time& time) {
 	} else if(inputDir > 0.0f) {
 		m_flipped = false;
 	}
-	if(m_flipped != prevFlipped) m_squisher.squish(time, 1.5f);
+	if(m_flipped != prevFlipped) m_squisher.squish(time);
 
 	// select the correct animation for our bunny
 	if(grounded) {
