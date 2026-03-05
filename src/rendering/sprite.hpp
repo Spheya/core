@@ -4,25 +4,27 @@
 
 class Sprite {
 public:
-	Sprite() = default;
+	constexpr Sprite() = default;
 
-	// clang-format off
-	Sprite(glm::uvec2 position, glm::uvec2 size, glm::uvec2 atlasSize) :
-	    m_dimensions(size),
-	    m_scaleOffset(
-	        float(size.x) / float(atlasSize.x),
-	        float(size.y) / float(atlasSize.y),
-	        float(position.x) / float(atlasSize.x),
-	        float(position.y) / float(atlasSize.y)
-	    ) {}
-	// clang-format on
+	constexpr Sprite(unsigned x, unsigned y, unsigned width, unsigned height, unsigned atlasWidth, unsigned atlasHeight) :
+	    m_width(width),
+	    m_height(height),
+	    m_scaleX(float(width) / float(atlasWidth)),
+	    m_scaleY(float(height / float(atlasHeight))),
+	    m_offsetX(float(x) / float(atlasWidth)),
+	    m_offsetY(float(y) / float(atlasHeight)) {}
 
-	[[nodiscard]] glm::uvec2 getDimensions() const { return m_dimensions; }
-	[[nodiscard]] unsigned getWidth() const { return m_dimensions.x; }
-	[[nodiscard]] unsigned getHeight() const { return m_dimensions.y; }
-	[[nodiscard]] glm::vec4 getScaleOffset() const { return m_scaleOffset; }
+	[[nodiscard]] glm::uvec2 getDimensions() const { return glm::vec2(m_width, m_height); }
+	[[nodiscard]] constexpr unsigned getWidth() const { return m_width; }
+	[[nodiscard]] constexpr unsigned getHeight() const { return m_height; }
+	[[nodiscard]] glm::vec4 getScaleOffset() const { return glm::vec4(m_scaleX, m_scaleY, m_offsetX, m_offsetY); }
 
 private:
-	glm::uvec2 m_dimensions = glm::uvec2(0);
-	glm::vec4 m_scaleOffset = glm::vec4(0.0f);
+	unsigned m_width = 0;
+	unsigned m_height = 0;
+
+	float m_scaleX = 0.0f;
+	float m_scaleY = 0.0f;
+	float m_offsetX = 0.0f;
+	float m_offsetY = 0.0f;
 };

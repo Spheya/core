@@ -160,7 +160,7 @@ void GraphicsContext::drawSprites(const Camera& camera, std::span<const SpriteDr
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 	auto* rtv = camera.target->getRenderTargetView();
-	auto* srv = SpriteAtlas::getInstance().getShaderResourceView();
+	auto* srv = SpriteAtlas::getShaderResourceView();
 
 	m_context->OMSetRenderTargets(1, &rtv, nullptr);
 	m_context->RSSetViewports(1, &viewport);
