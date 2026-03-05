@@ -25,4 +25,5 @@ private:
 private:
 	std::vector<PhysicsWindow> m_hitboxes;
 	std::vector<BoundingBox> m_screenEdges;
+	std::vector<BoundingBox> m_taskBar;
 };
