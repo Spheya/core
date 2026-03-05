@@ -140,6 +140,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\animation\character_animator.hpp" />
+    <ClInclude Include="src\animation\squisher.hpp" />
     <ClInclude Include="src\input\input.hpp" />
     <ClInclude Include="src\input\input_buttons.hpp" />
     <ClInclude Include="src\input\input_ids.hpp" />

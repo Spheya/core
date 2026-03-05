@@ -44,8 +44,10 @@ Player::Player(CharacterAnimations animations, const Input* input) :
     m_slideJumpBuffer(0.0f),
     m_jumpBuffer(0.0f),
     m_coyoteTime(0.0f),
+    m_isDucked(false),
     m_flipped(false),
-    m_animator(std::move(animations)) {
+    m_animator(std::move(animations)),
+    m_squisher(0.25f, 5.0f, 14.0f, glm::vec2(0.0f, 0.5f)) {
 	const Sprite clickAnim[] = { SpriteAtlas::getInstance().get("mouse.png"), SpriteAtlas::getInstance().get("mouse_left.png") };
 	m_clickAnimation = Animation(clickAnim, 24, 8); // todo: not hardcode this or sth
 
@@ -75,7 +77,19 @@ void Player::onUpdate(const Time& time) {
 	bool duckPressed = m_duckInput ? m_duckInput->isPressed() : false;
 	bool slide = grounded && duck && std::abs(m_velocity.x) > 200.0f;
 
-	if(duck && !slide && grounded) m_duckJumpBuffer = duckJumpBufferTime;
+	// ducking
+	if(m_isDucked != (duck && grounded)) {
+		float intensity = slide ? 1.0f : 0.6f;
+		if(m_isDucked) {
+			m_squisher.squish(time, intensity);
+		} else {
+			m_squisher.squash(time, intensity);
+		}
+	}
+	m_isDucked = duck && grounded;
+
+	// buffering
+	if(m_isDucked && !slide) m_duckJumpBuffer = duckJumpBufferTime;
 	if(slide) m_slideJumpBuffer = slideJumpBufferTime;
 	if(duckPressed) m_slideBuffer = slideBufferTime;
 	if(jumpPressed) m_jumpBuffer = jumpBuffertime;
@@ -106,7 +120,7 @@ void Player::onUpdate(const Time& time) {
 	// select physics constants based on state
 	float frictionCoefficient = friction;
 	if(!grounded) frictionCoefficient = airFriction;
-	if(grounded && duck) {
+	if(m_isDucked) {
 		frictionCoefficient = slideFriction;
 		inputDir = 0.0f;
 	}
@@ -123,17 +137,20 @@ void Player::onUpdate(const Time& time) {
 	m_velocity.x += inputDir * speed * frictionCoefficient * time.deltaTime();             // movement
 	m_velocity.x -= m_velocity.x * std::min(frictionCoefficient * time.deltaTime(), 1.0f); // friction
 	m_velocity.y += gravityCoefficient * time.deltaTime();                                 // gravity
-	move((m_velocity + prevVelocity) * 0.5f * time.deltaTime());
+	move(time, (m_velocity + prevVelocity) * 0.5f * time.deltaTime());
 
-	// select the correct animation for our bunny
+	// update orientation of the sprite
+	bool prevFlipped = m_flipped;
 	if(inputDir < 0.0f) {
 		m_flipped = true;
 	} else if(inputDir > 0.0f) {
 		m_flipped = false;
 	}
+	if(m_flipped != prevFlipped) m_squisher.squish(time);
 
+	// select the correct animation for our bunny
 	if(grounded) {
-		if(duck) {
+		if(m_isDucked) {
 			if(slide) {
 				m_animator.setAnimation(CharacterAnimation::Slide);
 			} else {
@@ -162,7 +179,8 @@ void Player::onUpdate(const Time& time) {
 	// update the visuals
 	m_sprite.sprite = m_animator.getCurrentFrame();
 	m_sprite.matrix =
-	    glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0.0f)), glm::vec3(m_flipped ? -96.0f : 96.0f, 96.0f, 1.0f));
+	    glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0.0f)), glm::vec3(m_flipped ? -96.0f : 96.0f, 96.0f, 1.0f))
+	    * m_squisher.calcMatrix(time);
 
 	m_clickSprite.sprite = m_clickAnimation.getCurrentFrame();
 	m_clickSprite.matrix =
@@ -183,7 +201,7 @@ void Player::updateClickableRegion() {
 	if(SurfaceManager::getInstance().canPushClickableRegion()) SurfaceManager::getInstance().pushClickableRegion(clickBounds);
 }
 
-void Player::move(glm::vec2 delta) {
+void Player::move(const Time& time, glm::vec2 delta) {
 	if(dot(delta, delta) < 0.001f) return;
 
 	constexpr float err = 0.25f;
@@ -197,7 +215,7 @@ void Player::move(glm::vec2 delta) {
 		position += movDirection * movLength;
 	} else {
 		position += movDirection * (hit.distance - err);
-		m_velocity -= glm::dot(hit.normal, m_velocity) * hit.normal;
+		onImpact(time, hit.normal);
 
 		delta -= glm::dot(hit.normal, delta) * hit.normal;
 		if(dot(delta, delta) > 0.001f) {
@@ -210,8 +228,22 @@ void Player::move(glm::vec2 delta) {
 				position += movDirection * movLength;
 			} else {
 				position += movDirection * (hit.distance - err);
-				m_velocity -= glm::dot(hit.normal, m_velocity) * hit.normal;
+				onImpact(time, hit.normal);
 			}
 		}
+	}
+}
+
+void Player::onImpact(const Time& time, glm::vec2 normal) {
+	glm::vec2 impactForce = glm::dot(normal, m_velocity) * normal;
+	m_velocity -= impactForce;
+	float intensity = glm::length(impactForce) / 800.0f;
+
+	if(intensity < 0.5f) return;
+
+	if(abs(normal.x) > abs(normal.y)) {
+		m_squisher.squish(time, std::min(intensity, 2.0f));
+	} else {
+		m_squisher.squash(time, std::min(intensity, 3.0f));
 	}
 }

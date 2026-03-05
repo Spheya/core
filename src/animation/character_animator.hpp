@@ -18,7 +18,7 @@ class CharacterAnimator {
 public:
 	CharacterAnimator(CharacterAnimations animations);
 
-	void setAnimation(CharacterAnimation animation);
+	bool setAnimation(CharacterAnimation animation);
 	void update(const Time& time);
 	void reset();
 	[[nodiscard]] const Sprite& getCurrentFrame() const { return m_currentAnimation->getCurrentFrame(); }

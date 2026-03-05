@@ -3,12 +3,14 @@
 CharacterAnimator::CharacterAnimator(CharacterAnimations animations) :
     m_animations(std::make_unique<CharacterAnimations>(std::move(animations))), m_currentAnimation(&m_animations->idle), m_shouldReset(false) {}
 
-void CharacterAnimator::setAnimation(CharacterAnimation animation) {
+bool CharacterAnimator::setAnimation(CharacterAnimation animation) {
 	Animation* selectedAnimation = (&m_animations->idle) + int(animation);
 	if(m_currentAnimation != selectedAnimation) {
 		m_currentAnimation = selectedAnimation;
 		m_shouldReset = true;
+		return true;
 	}
+	return false;
 }
 
 void CharacterAnimator::update(const Time& time) {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "animation/character_animator.hpp"
+#include "animation/squisher.hpp"
 #include "input/input.hpp"
 #include "math.hpp"
 #include "scene/entity.hpp"
@@ -17,7 +18,8 @@ public:
 
 private:
 	void updateClickableRegion();
-	void move(glm::vec2 delta);
+	void move(const Time& time, glm::vec2 delta);
+	void onImpact(const Time& time, glm::vec2 normal);
 
 private:
 	const Input* m_input;
@@ -34,10 +36,13 @@ private:
 	float m_jumpBuffer;
 	float m_coyoteTime;
 
+	bool m_isDucked;
+
 	bool m_flipped;
 	SpriteDrawable m_sprite;
 	SpriteDrawable m_clickSprite;
 
 	CharacterAnimator m_animator;
 	Animation m_clickAnimation;
+	Squisher m_squisher;
 };
