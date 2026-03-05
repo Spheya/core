@@ -14,13 +14,11 @@
 static std::atomic_bool s_closeRequested; // NOLINT
 
 static void applicationLoop() {
-	Sprite playerSprites[] = {
-		SpriteAtlas::getInstance().get("player_duck.png"),   SpriteAtlas::getInstance().get("player_fall.png"),
-		SpriteAtlas::getInstance().get("player_idle_2.png"), SpriteAtlas::getInstance().get("player_idle_1.png"),
-		SpriteAtlas::getInstance().get("player_jump.png"),   SpriteAtlas::getInstance().get("player_run_1.png"),
-		SpriteAtlas::getInstance().get("player_run_2.png"),  SpriteAtlas::getInstance().get("player_run_3.png"),
-		SpriteAtlas::getInstance().get("player_run_4.png"),  SpriteAtlas::getInstance().get("player_run_5.png"),
-		SpriteAtlas::getInstance().get("player_run_6.png"),  SpriteAtlas::getInstance().get("player_slide.png"),
+	constexpr Sprite playerSprites[] = {
+		SpriteAtlas::get("player_duck.png"),   SpriteAtlas::get("player_fall.png"),  SpriteAtlas::get("player_idle_2.png"),
+		SpriteAtlas::get("player_idle_1.png"), SpriteAtlas::get("player_jump.png"),  SpriteAtlas::get("player_run_1.png"),
+		SpriteAtlas::get("player_run_2.png"),  SpriteAtlas::get("player_run_3.png"), SpriteAtlas::get("player_run_4.png"),
+		SpriteAtlas::get("player_run_5.png"),  SpriteAtlas::get("player_run_6.png"), SpriteAtlas::get("player_slide.png"),
 	};
 
 	CharacterAnimations playerAnimations = {

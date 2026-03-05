@@ -48,7 +48,7 @@ Player::Player(CharacterAnimations animations, const Input* input) :
     m_flipped(false),
     m_animator(std::move(animations)),
     m_squisher(0.25f, 5.0f, 14.0f, glm::vec2(0.0f, 0.5f)) {
-	const Sprite clickAnim[] = { SpriteAtlas::getInstance().get("mouse.png"), SpriteAtlas::getInstance().get("mouse_left.png") };
+	constexpr Sprite clickAnim[] = { SpriteAtlas::get("mouse.png"), SpriteAtlas::get("mouse_left.png") };
 	m_clickAnimation = Animation(clickAnim, 24, 8); // todo: not hardcode this or sth
 
 	localPhysicsBounds = { .min = glm::vec2(-10.0f, 16.0f), .max = glm::vec2(10.0f, 48.0f) };
