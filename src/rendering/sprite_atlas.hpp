@@ -8,7 +8,6 @@
 #include "platform.hpp"
 #include "sprite.hpp"
 
-// Todo: constexpr this, somehow
 class SpriteAtlas {
 public:
 	static void load();
@@ -35,6 +34,7 @@ private:
 	static ComPtr<ID3D11ShaderResourceView> s_shaderResourceView;
 };
 
+// yeah i know this code is a bit undercooked, but it gets the job done so whatever
 consteval Sprite SpriteAtlas::get(const char* name) {
 	constexpr static char jsonFile[] = {
 #embed "embed/atlas.json"
