@@ -52,12 +52,15 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <MultiProcFXC>true</MultiProcFXC>
+    <ExternalIncludePath>$(SolutionDir)external\glm;$(SolutionDir)external\json;$(SolutionDir)external\stb;$(SolutionDir)external\zpack;$(VC_IncludePath);$(WindowsSDK_IncludePath);</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <MultiProcFXC>true</MultiProcFXC>
+    <ExternalIncludePath>$(SolutionDir)external\glm;$(SolutionDir)external\json;$(SolutionDir)external\stb;$(SolutionDir)external\zpack;$(VC_IncludePath);$(WindowsSDK_IncludePath);</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">
     <MultiProcFXC>true</MultiProcFXC>
+    <ExternalIncludePath>$(SolutionDir)external\glm;$(SolutionDir)external\json;$(SolutionDir)external\stb;$(SolutionDir)external\zpack;$(VC_IncludePath);$(WindowsSDK_IncludePath);</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -67,7 +70,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)external\glm;$(SolutionDir)external\json;$(SolutionDir)external\stb;$(IntDir)embed;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
@@ -192,7 +195,10 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  <Target Name="GenerateTextureAtlas" BeforeTargets="ClCompile" Inputs="@(AtlasInputs)" Outputs="$(ProjectDir)embed\atlas.png;$(ProjectDir)embed\atlas.json">
+  <Target Name="PackageAssets" BeforeTargets="ClCompile">
+    <Exec Command="&quot;$(SolutionDir)external\zpack\zpack&quot; &quot;$(ProjectDir)embed&quot; &quot;$(ProjectDir)assets.pkg&quot; *.png *.cso -v -u" />
+  </Target>
+  <Target Name="GenerateTextureAtlas" BeforeTargets="PackageAssets" Inputs="@(AtlasInputs)" Outputs="$(ProjectDir)embed\atlas.png;$(ProjectDir)embed\atlas.json">
     <Exec Command="&quot;$(SolutionDir)external\atlas\atlas&quot; pack -o --short &quot;$(ProjectDir)assets&quot; &quot;$(ProjectDir)embed\atlas&quot;" />
   </Target>
 </Project>

@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
@@ -10,17 +11,15 @@
 
 ComPtr<ID3D11ShaderResourceView> SpriteAtlas::s_shaderResourceView;
 
-void SpriteAtlas::load() {
-	constexpr char pngFile[] = {
-#embed "embed/atlas.png"
-	};
+void SpriteAtlas::load(const zpack::FileLoader& fileLoader) {
+	std::vector<char> pngFile = fileLoader.get("atlas.png").read();
 
 	// Load texture data
 	int w = 0;
 	int h = 0;
 	int components = 0;
 	unsigned char* imageData =
-	    stbi_load_from_memory(reinterpret_cast<const unsigned char*>(pngFile), sizeof(pngFile), &w, &h, &components, 4); // NOLINT
+	    stbi_load_from_memory(reinterpret_cast<const unsigned char*>(pngFile.data()), pngFile.size(), &w, &h, &components, 4); // NOLINT
 
 	// Create DX11 texture
 	D3D11_TEXTURE2D_DESC textureDesc = {};

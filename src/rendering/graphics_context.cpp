@@ -17,15 +17,15 @@ namespace {
 	};
 } // namespace
 
-void GraphicsContext::initialize() {
+void GraphicsContext::initialize(const zpack::FileLoader& fileLoader) {
 	assert(!s_instance);
 	s_instance = new GraphicsContext();
 
 #ifdef _DEBUG
-	s_instance->m_debugRenderer = std::make_unique<DebugRenderer>();
+	s_instance->m_debugRenderer = std::make_unique<DebugRenderer>(fileLoader);
 #endif
 
-	s_instance->loadResources();
+	s_instance->loadResources(fileLoader);
 }
 
 void GraphicsContext::close() {
@@ -200,13 +200,9 @@ void GraphicsContext::drawSprites(const Camera& camera, std::span<const SpriteDr
 	}
 }
 
-void GraphicsContext::loadResources() {
-	constexpr char defaultVertexSource[] = {
-#embed "embed/default_vs.cso"
-	};
-	constexpr char defaultPixelSource[] = {
-#embed "embed/default_ps.cso"
-	};
+void GraphicsContext::loadResources(const zpack::FileLoader& fileLoader) {
+	auto defaultVertexSource = fileLoader.get("default_vs.cso").read();
+	auto defaultPixelSource = fileLoader.get("default_ps.cso").read();
 
 	constexpr D3D11_INPUT_ELEMENT_DESC layout[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 0,  D3D11_INPUT_PER_VERTEX_DATA,   0 },
@@ -221,16 +217,17 @@ void GraphicsContext::loadResources() {
 
 	handleFatalError(
 	    m_device->CreateInputLayout(
-	        layout, sizeof(layout) / sizeof(*layout), defaultVertexSource, sizeof(defaultVertexSource), &m_defaultInputLayout
+	        layout, sizeof(layout) / sizeof(*layout), defaultVertexSource.data(), defaultVertexSource.size(), &m_defaultInputLayout
 	    ),
 	    "Could not load vertex layout"
 	);
 	handleFatalError(
-	    m_device->CreateVertexShader(defaultVertexSource, sizeof(defaultVertexSource), nullptr, &m_defaultVertexShader),
+	    m_device->CreateVertexShader(defaultVertexSource.data(), defaultVertexSource.size(), nullptr, &m_defaultVertexShader),
 	    "Could not load vertex shader"
 	);
 	handleFatalError(
-	    m_device->CreatePixelShader(defaultPixelSource, sizeof(defaultPixelSource), nullptr, &m_defaultPixelShader), "Could not load pixel shader"
+	    m_device->CreatePixelShader(defaultPixelSource.data(), defaultPixelSource.size(), nullptr, &m_defaultPixelShader),
+	    "Could not load pixel shader"
 	);
 
 	constexpr Vertex quadVertices[] = {

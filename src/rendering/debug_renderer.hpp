@@ -4,6 +4,8 @@
 
 	#include <vector>
 
+	#include <zpack.hpp>
+
 	#include "math.hpp"
 	#include "physics/bounding_box.hpp"
 	#include "platform.hpp"
@@ -14,7 +16,7 @@ public:
 	constexpr static size_t MaxVertices = MaxLines * 2;
 
 public:
-	DebugRenderer();
+	DebugRenderer(const zpack::FileLoader& fileLoader);
 
 	void line(glm::vec2 a, glm::vec2 b, glm::vec4 color = glm::vec4(1.0f));
 	void box(const BoundingBox& box, glm::vec4 color = glm::vec4(1.0f));

@@ -5,12 +5,14 @@
 #include <string>
 #include <unordered_map>
 
+#include <zpack.hpp>
+
 #include "platform.hpp"
 #include "sprite.hpp"
 
 class SpriteAtlas {
 public:
-	static void load();
+	static void load(const zpack::FileLoader& fileLoader);
 	static void destroy();
 
 	[[nodiscard]] static ID3D11ShaderResourceView* getShaderResourceView() { return s_shaderResourceView.Get(); }

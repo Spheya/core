@@ -1,5 +1,8 @@
 #include <thread>
 
+#define ZPACK_IMPLEMENTATION
+#include <zpack.hpp>
+
 #include "input/input_ids.hpp"
 #include "physics/intersection.hpp"
 #include "physics/window_physics.hpp"
@@ -12,6 +15,13 @@
 #include "time.hpp"
 
 static std::atomic_bool s_closeRequested; // NOLINT
+
+static zpack::FileLoader createFileLoader() {
+	constexpr char assets[] = {
+#embed "assets.pkg"
+	};
+	return zpack::FileLoader(assets, sizeof(assets));
+}
 
 static void applicationLoop() {
 	constexpr Sprite playerSprites[] = {
@@ -77,9 +87,11 @@ static void applicationLoop() {
 }
 
 static int runApp(HINSTANCE hInstance) {
-	GraphicsContext::initialize();
+	zpack::FileLoader fileLoader = createFileLoader();
+
+	GraphicsContext::initialize(fileLoader);
 	SurfaceManager::initialize(hInstance);
-	SpriteAtlas::load();
+	SpriteAtlas::load(fileLoader);
 
 	std::thread app(applicationLoop);
 

@@ -3,6 +3,8 @@
 #include <memory>
 #include <span>
 
+#include <zpack.hpp>
+
 #include "camera.hpp"
 #include "debug_renderer.hpp"
 #include "mesh.hpp"
@@ -11,7 +13,7 @@
 
 class GraphicsContext {
 public:
-	static void initialize();
+	static void initialize(const zpack::FileLoader& fileLoader);
 	static void close();
 	[[nodiscard]] static GraphicsContext& getInstance();
 
@@ -32,7 +34,7 @@ public:
 #endif
 
 private:
-	void loadResources();
+	void loadResources(const zpack::FileLoader& fileLoader);
 
 private:
 	static GraphicsContext* s_instance;

@@ -4,13 +4,9 @@
 
 	#include "graphics_context.hpp"
 
-DebugRenderer::DebugRenderer() {
-	constexpr char lineVertexSource[] = {
-	#embed "embed/line_vs.cso"
-	};
-	constexpr char linePixelSource[] = {
-	#embed "embed/line_ps.cso"
-	};
+DebugRenderer::DebugRenderer(const zpack::FileLoader& fileLoader) {
+	auto lineVertexSource = fileLoader.get("line_vs.cso").read();
+	auto linePixelSource = fileLoader.get("line_ps.cso").read();
 
 	constexpr D3D11_INPUT_ELEMENT_DESC layout[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -20,14 +16,14 @@ DebugRenderer::DebugRenderer() {
 	auto* device = GraphicsContext::getInstance().getDevice();
 
 	handleFatalError(
-	    device->CreateInputLayout(layout, sizeof(layout) / sizeof(*layout), lineVertexSource, sizeof(lineVertexSource), &m_lineInputLayout),
+	    device->CreateInputLayout(layout, sizeof(layout) / sizeof(*layout), lineVertexSource.data(), lineVertexSource.size(), &m_lineInputLayout),
 	    "Can not load debug vertex layout"
 	);
 	handleFatalError(
-	    device->CreateVertexShader(lineVertexSource, sizeof(lineVertexSource), nullptr, &m_lineVertexShader), "Can not load debug vertex shader"
+	    device->CreateVertexShader(lineVertexSource.data(), lineVertexSource.size(), nullptr, &m_lineVertexShader), "Can not load debug vertex shader"
 	);
 	handleFatalError(
-	    device->CreatePixelShader(linePixelSource, sizeof(linePixelSource), nullptr, &m_linePixelShader), "Can not load debug pixel shader"
+	    device->CreatePixelShader(linePixelSource.data(), linePixelSource.size(), nullptr, &m_linePixelShader), "Can not load debug pixel shader"
 	);
 
 	D3D11_BUFFER_DESC bufferDesc = {};
